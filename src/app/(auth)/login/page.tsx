@@ -62,7 +62,7 @@ export default function LoginPage() {
     const handler = (e: KeyboardEvent) => {
       if (success) return
       if (document.activeElement?.id === 'email-input') return
-      if (e.key >= '0' && e.key <= '9' && pin.length < 4) {
+      if (e.key >= '0' && e.key <= '9' && pin.length < 6) {
         setPin(p => p + e.key)
         setError('')
       }
