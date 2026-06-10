@@ -48,6 +48,7 @@ export default function RegisterPG() {
   const [loadingAdmins, setLoadingAdmins] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPublished, setIsPublished] = useState(false)
+  const [registeredPgId, setRegisteredPgId] = useState<string | null>(null)
 
   // Form Fields
   // Step 1: Basic details
@@ -201,6 +202,7 @@ export default function RegisterPG() {
     try {
       const res = await registerPGAction(pgData, adminData)
       if (res.success) {
+        setRegisteredPgId(res.pgId || null)
         toast.success('PG property registered successfully!')
         setIsPublished(true)
       } else {
@@ -311,12 +313,12 @@ export default function RegisterPG() {
                 <div className="sb-sub">{pgName} is now live on GharPG</div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 24 }}>
-                <div className="action-card" onClick={() => router.push('/pgadmin/rooms')}>
+                <div className="action-card" onClick={() => router.push(`/pgadmin/rooms?pgId=${registeredPgId}`)}>
                   <div style={{ fontSize: 24, marginBottom: 8 }}>🏢</div>
                   <div style={{ fontSize: 13, fontWeight: 800 }}>Set Up Rooms</div>
                   <div style={{ fontSize: 11.5, color: 'var(--text-soft)', marginTop: 3 }}>Open Floor & Room Builder</div>
                 </div>
-                <div className="action-card" onClick={() => router.push('/pgadmin/guests/add')}>
+                <div className="action-card" onClick={() => router.push(`/pgadmin/guests/add?pgId=${registeredPgId}`)}>
                   <div style={{ fontSize: 24, marginBottom: 8 }}>👥</div>
                   <div style={{ fontSize: 13, fontWeight: 800 }}>Add First Guest</div>
                   <div style={{ fontSize: 11.5, color: 'var(--text-soft)', marginTop: 3 }}>Start onboarding guests</div>
@@ -1138,9 +1140,12 @@ export default function RegisterPG() {
         }
         .pg-type-btn {
           border: 1.5px solid var(--border);
-          border-radius: 12px;
-          padding: 14px 10px;
-          text-align: center;
+          border-radius: 8px;
+          padding: 6px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
           cursor: pointer;
           transition: all 0.18s;
           background: var(--bg);
@@ -1155,18 +1160,16 @@ export default function RegisterPG() {
           box-shadow: 0 0 0 3px rgba(244,112,10,0.10);
         }
         .pgt-ic {
-          font-size: 28px;
-          margin-bottom: 8px;
+          font-size: 16px;
+          margin-bottom: 0;
         }
         .pgt-nm {
-          font-size: 12.5px;
+          font-size: 11.5px;
           font-weight: 800;
           color: var(--text-mid);
         }
         .pgt-desc {
-          font-size: 10.5px;
-          color: var(--text-soft);
-          margin-top: 2px;
+          display: none;
         }
         .pg-type-btn.sel .pgt-nm {
           color: var(--orange);

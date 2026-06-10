@@ -14,21 +14,25 @@ export default async function PGAdminLayout({ children }: { children: React.Reac
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.role !== 'pgadmin') redirect('/login')
+  if (!profile || (profile.role !== 'pgadmin' && profile.role !== 'superadmin')) redirect('/login')
 
   // Get assigned PG name
-  const { data: pgAdmin } = await supabase
-    .from('pg_admins')
-    .select('pgs(name)')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .single()
-
-  const pgName = (pgAdmin?.pgs as unknown as { name: string } | null)?.name || 'My PG'
+  let pgName = 'My PG'
+  if (profile.role === 'pgadmin') {
+    const { data: pgAdmin } = await supabase
+      .from('pg_admins')
+      .select('pgs(name)')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle()
+    pgName = (pgAdmin?.pgs as unknown as { name: string } | null)?.name || 'My PG'
+  } else {
+    pgName = 'Super Admin'
+  }
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#FAF6F2' }}>
-      <Sidebar role="pgadmin" userName={profile.name} pgName={pgName} />
+      <Sidebar role={profile.role as any} userName={profile.name} pgName={pgName} />
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>

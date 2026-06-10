@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
@@ -9,6 +9,8 @@ import { Room, Floor, Row } from '@/lib/types/database'
 
 export default function FloorRoomBuilder() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlPgId = searchParams.get('pgId')
   const supabase = createClient()
 
   // Database states
@@ -57,21 +59,45 @@ export default function FloorRoomBuilder() {
         return
       }
 
-      // Get admin's PG
-      const { data: pgAdmin, error: pgErr } = await supabase
-        .from('pg_admins')
-        .select('pg_id, pgs(id, name, city)')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
+      // Check profile role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
         .single()
 
-      if (pgErr || !pgAdmin) {
+      let pg = null
+
+      if (profile?.role === 'superadmin' && urlPgId) {
+        const { data: pgData } = await supabase
+          .from('pgs')
+          .select('id, name, city')
+          .eq('id', urlPgId)
+          .single()
+        if (pgData) {
+          pg = pgData
+        }
+      }
+
+      if (!pg) {
+        const { data: pgAdmin } = await supabase
+          .from('pg_admins')
+          .select('pg_id, pgs(id, name, city)')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle()
+
+        if (pgAdmin && pgAdmin.pgs) {
+          pg = pgAdmin.pgs as unknown as { id: string; name: string; city: string }
+        }
+      }
+
+      if (!pg) {
         toast.error('No active PG assigned to your profile')
         router.push('/login')
         return
       }
 
-      const pg = pgAdmin.pgs as unknown as { id: string; name: string; city: string }
       setPgId(pg.id)
       setPgName(pg.name)
 

@@ -301,7 +301,7 @@ export default function SuperAdminPgs() {
                         🗑️
                       </button>
                       <button 
-                        onClick={() => router.push('/pgadmin/rooms')}
+                        onClick={() => router.push(`/pgadmin/rooms?pgId=${pg.id}`)}
                         className="edit-btn"
                       >
                         Set Up Rooms 🏢
