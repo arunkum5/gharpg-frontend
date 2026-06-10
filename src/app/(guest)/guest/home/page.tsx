@@ -344,116 +344,118 @@ export default function GuestHome() {
               </div>
             </div>
 
-            <div className="home-body">
-              {/* QUICK ACTIONS */}
-              <div>
-                <div className="sec-hd">
-                  <div className="sec-title">Quick Actions</div>
-                </div>
-                <div className="quick-actions">
-                  <div className="qa-item" onClick={() => setActiveScreen('room')}>
-                    <div className="qa-icon" style={{ background: 'var(--orange-pale)' }}>🏠</div>
-                    <div className="qa-label">My Room</div>
-                  </div>
-                  <div className="qa-item" onClick={() => setActiveScreen('refer')}>
-                    <div className="qa-icon" style={{ background: 'var(--green-pale)' }}>🔗</div>
-                    <div className="qa-label">Refer Guest</div>
-                  </div>
-                  <div className="qa-item">
-                    <div className="qa-icon" style={{ background: 'var(--amber-pale)' }}>🍱</div>
-                    <div className="qa-label">Food Menu</div>
-                  </div>
-                  <div className="qa-item" onClick={() => setActiveScreen('profile')}>
-                    <div className="qa-icon" style={{ background: '#EFF6FF' }}>📄</div>
-                    <div className="qa-label">My Docs</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* NOTICE */}
-              {notice && (
+            <div className="screen-scroll">
+              <div className="home-body">
+                {/* QUICK ACTIONS */}
                 <div>
                   <div className="sec-hd">
-                    <div className="sec-title">📣 Latest Notice</div>
+                    <div className="sec-title">Quick Actions</div>
                   </div>
-                  <div className="notice-card">
-                    <div className="nc-icon">🔔</div>
-                    <div>
-                      <div className="nc-title">{notice.title}</div>
-                      <div className="nc-body">{notice.body}</div>
-                      <div className="nc-time">
-                        Posted by Admin · {new Date(notice.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                      </div>
+                  <div className="quick-actions">
+                    <div className="qa-item" onClick={() => setActiveScreen('room')}>
+                      <div className="qa-icon" style={{ background: 'var(--orange-pale)' }}>🏠</div>
+                      <div className="qa-label">My Room</div>
+                    </div>
+                    <div className="qa-item" onClick={() => setActiveScreen('refer')}>
+                      <div className="qa-icon" style={{ background: 'var(--green-pale)' }}>🔗</div>
+                      <div className="qa-label">Refer Guest</div>
+                    </div>
+                    <div className="qa-item">
+                      <div className="qa-icon" style={{ background: 'var(--amber-pale)' }}>🍱</div>
+                      <div className="qa-label">Food Menu</div>
+                    </div>
+                    <div className="qa-item" onClick={() => setActiveScreen('profile')}>
+                      <div className="qa-icon" style={{ background: '#EFF6FF' }}>📄</div>
+                      <div className="qa-label">My Docs</div>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* ROOMMATES */}
-              {roommates.length > 0 && (
-                <div>
-                  <div className="sec-hd">
-                    <div className="sec-title">👫 Roommates</div>
-                  </div>
-                  <div className="roommates">
-                    {roommates.map(rm => {
-                      const rmInitials = `${rm.first_name[0]}${rm.last_name[0]}`.toUpperCase()
-                      return (
-                        <div key={rm.id} className="rm-item">
-                          <div className="rm-av" style={{ background: 'linear-gradient(135deg,#1DB970,#5DE89A)' }}>
-                            {rmInitials}
-                          </div>
-                          <div>
-                            <div className="rm-name">{rm.first_name} {rm.last_name}</div>
-                            <div className="rm-sub">
-                              {rm.purpose === 'student' ? 'Student' : rm.purpose === 'working' ? 'Working Professional' : 'Resident'} · Since {rm.checkin_date ? new Date(rm.checkin_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'recently'}
-                            </div>
-                          </div>
-                          <div className="rm-status rm-online"></div>
+                {/* NOTICE */}
+                {notice && (
+                  <div>
+                    <div className="sec-hd">
+                      <div className="sec-title">📣 Latest Notice</div>
+                    </div>
+                    <div className="notice-card">
+                      <div className="nc-icon">🔔</div>
+                      <div>
+                        <div className="nc-title">{notice.title}</div>
+                        <div className="nc-body">{notice.body}</div>
+                        <div className="nc-time">
+                          Posted by Admin · {new Date(notice.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                         </div>
-                      )
-                    })}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* REFER BANNER */}
-              <div className="refer-btn" onClick={() => setActiveScreen('refer')}>
-                <div className="rb-icon">🔗</div>
+                {/* ROOMMATES */}
+                {roommates.length > 0 && (
+                  <div>
+                    <div className="sec-hd">
+                      <div className="sec-title">👫 Roommates</div>
+                    </div>
+                    <div className="roommates">
+                      {roommates.map(rm => {
+                        const rmInitials = `${rm.first_name[0]}${rm.last_name[0]}`.toUpperCase()
+                        return (
+                          <div key={rm.id} className="rm-item">
+                            <div className="rm-av" style={{ background: 'linear-gradient(135deg,#1DB970,#5DE89A)' }}>
+                              {rmInitials}
+                            </div>
+                            <div>
+                              <div className="rm-name">{rm.first_name} {rm.last_name}</div>
+                              <div className="rm-sub">
+                                {rm.purpose === 'student' ? 'Student' : rm.purpose === 'working' ? 'Working Professional' : 'Resident'} · Since {rm.checkin_date ? new Date(rm.checkin_date).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'recently'}
+                              </div>
+                            </div>
+                            <div className="rm-status rm-online"></div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* REFER BANNER */}
+                <div className="refer-btn" onClick={() => setActiveScreen('refer')}>
+                  <div className="rb-icon">🔗</div>
+                  <div>
+                    <div className="rb-title">Know someone looking for PG?</div>
+                    <div className="rb-sub">Refer them and help them find a home</div>
+                  </div>
+                  <div className="rb-arrow">›</div>
+                </div>
+
+                {/* STAY INFO */}
                 <div>
-                  <div className="rb-title">Know someone looking for PG?</div>
-                  <div className="rb-sub">Refer them and help them find a home</div>
-                </div>
-                <div className="rb-arrow">›</div>
-              </div>
-
-              {/* STAY INFO */}
-              <div>
-                <div className="sec-hd"><div className="sec-title">📋 Stay Info</div></div>
-                <div className="info-card">
-                  <div className="ic-body">
-                    <div className="detail-rows">
-                      <div className="dr">
-                        <span className="dr-key">Check-in Date</span>
-                        <span className="dr-val">
-                          {guest.checkin_date ? new Date(guest.checkin_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
-                        </span>
-                      </div>
-                      <div className="dr">
-                        <span className="dr-key">Duration</span>
-                        <span className="dr-val">{guest.stay_duration_months || 6} Months</span>
-                      </div>
-                      <div className="dr">
-                        <span className="dr-key">Monthly Rent</span>
-                        <span className="dr-val" style={{ color: 'var(--orange)' }}>₹{guest.monthly_rent || 7500}</span>
-                      </div>
-                      <div className="dr">
-                        <span className="dr-key">PG Name</span>
-                        <span className="dr-val">{pg?.name || 'Sunshine Residency'}</span>
-                      </div>
-                      <div className="dr">
-                        <span className="dr-key">City</span>
-                        <span className="dr-val">{pg?.city || 'Mumbai'}</span>
+                  <div className="sec-hd"><div className="sec-title">📋 Stay Info</div></div>
+                  <div className="info-card">
+                    <div className="ic-body">
+                      <div className="detail-rows">
+                        <div className="dr">
+                          <span className="dr-key">Check-in Date</span>
+                          <span className="dr-val">
+                            {guest.checkin_date ? new Date(guest.checkin_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </span>
+                        </div>
+                        <div className="dr">
+                          <span className="dr-key">Duration</span>
+                          <span className="dr-val">{guest.stay_duration_months || 6} Months</span>
+                        </div>
+                        <div className="dr">
+                          <span className="dr-key">Monthly Rent</span>
+                          <span className="dr-val" style={{ color: 'var(--orange)' }}>₹{guest.monthly_rent || 7500}</span>
+                        </div>
+                        <div className="dr">
+                          <span className="dr-key">PG Name</span>
+                          <span className="dr-val">{pg?.name || 'Sunshine Residency'}</span>
+                        </div>
+                        <div className="dr">
+                          <span className="dr-key">City</span>
+                          <span className="dr-val">{pg?.city || 'Mumbai'}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -502,65 +504,67 @@ export default function GuestHome() {
                 </div>
               </div>
             </div>
-            <div className="rs-body">
-              <div className="info-card">
-                <div className="ic-hd"><div className="ic-title">🛋️ Room Details</div></div>
-                <div className="ic-body">
-                  <div className="detail-rows">
-                    <div className="dr"><span className="dr-key">Room Number</span><span className="dr-val">{room?.room_number || '104'}</span></div>
-                    <div className="dr"><span className="dr-key">Floor</span><span className="dr-val">{room?.floors?.floor_name || '1st Floor'}</span></div>
-                    <div className="dr"><span className="dr-key">Row / Wing</span><span className="dr-val">{room?.rows?.row_name || 'Row A'}</span></div>
-                    <div className="dr"><span className="dr-key">Capacity</span><span className="dr-val">{room?.capacity || 2} Guests</span></div>
-                    <div className="dr"><span className="dr-key">Monthly Rent</span><span className="dr-val" style={{ color: 'var(--orange)' }}>₹{room?.monthly_rent || 7500}</span></div>
-                  </div>
-                  {room?.amenities && room.amenities.length > 0 && (
-                    <div className="amenity-chips" style={{ marginTop: 12 }}>
-                      {room.amenities.map(a => (
-                        <div key={a} className="achip">⚙️ {a}</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {roommates.length > 0 && (
+            <div className="screen-scroll">
+              <div className="rs-body">
                 <div className="info-card">
-                  <div className="ic-hd"><div className="ic-title">👫 Roommates</div></div>
+                  <div className="ic-hd"><div className="ic-title">🛋️ Room Details</div></div>
                   <div className="ic-body">
-                    <div className="roommates">
-                      {roommates.map(rm => (
-                        <div key={rm.id} className="rm-item" style={{ border: 'none', padding: 0 }}>
-                          <div className="rm-av" style={{ background: 'linear-gradient(135deg,#1DB970,#5DE89A)' }}>
-                            {rm.first_name[0]}{rm.last_name[0]}
-                          </div>
-                          <div>
-                            <div className="rm-name">{rm.first_name} {rm.last_name}</div>
-                            <div className="rm-sub">{rm.purpose === 'working' ? 'Working' : 'Student'} · Since {rm.checkin_date ? new Date(rm.checkin_date).toLocaleDateString('en-IN', { month: 'short' }) : 'recently'}</div>
-                          </div>
-                          <div className="rm-status rm-online"></div>
-                        </div>
-                      ))}
+                    <div className="detail-rows">
+                      <div className="dr"><span className="dr-key">Room Number</span><span className="dr-val">{room?.room_number || '104'}</span></div>
+                      <div className="dr"><span className="dr-key">Floor</span><span className="dr-val">{room?.floors?.floor_name || '1st Floor'}</span></div>
+                      <div className="dr"><span className="dr-key">Row / Wing</span><span className="dr-val">{room?.rows?.row_name || 'Row A'}</span></div>
+                      <div className="dr"><span className="dr-key">Capacity</span><span className="dr-val">{room?.capacity || 2} Guests</span></div>
+                      <div className="dr"><span className="dr-key">Monthly Rent</span><span className="dr-val" style={{ color: 'var(--orange)' }}>₹{room?.monthly_rent || 7500}</span></div>
                     </div>
-                    {room && room.current_occupancy < room.capacity && (
-                      <div
-                        style={{ marginTop: 12, padding: '11px 13px', background: 'var(--orange-pale)', border: '1.5px dashed var(--orange-border)', borderRadius: 11, textAlign: 'center', cursor: 'pointer' }}
-                        onClick={() => setActiveScreen('refer')}
-                      >
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--orange)' }}>＋ Refer a Guest for this Room</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 2 }}>Bed available · sharing room</div>
+                    {room?.amenities && room.amenities.length > 0 && (
+                      <div className="amenity-chips" style={{ marginTop: 12 }}>
+                        {room.amenities.map(a => (
+                          <div key={a} className="achip">⚙️ {a}</div>
+                        ))}
                       </div>
                     )}
                   </div>
                 </div>
-              )}
 
-              <div className="info-card">
-                <div className="ic-hd"><div className="ic-title">📍 PG Details</div></div>
-                <div className="ic-body">
-                  <div className="detail-rows">
-                    <div className="dr"><span className="dr-key">PG Name</span><span className="dr-val">{pg?.name || 'Sunshine Residency'}</span></div>
-                    <div className="dr"><span className="dr-key">Address</span><span className="dr-val" style={{ textAlign: 'right', maxWidth: '60%', wordBreak: 'break-word' }}>{pg?.address || 'Andheri West, Mumbai'}</span></div>
-                    <div className="dr"><span className="dr-key">Admin Contact</span><span className="dr-val" style={{ color: 'var(--orange)' }}>📞 {pg?.contact_phone || '9876543210'}</span></div>
+                {roommates.length > 0 && (
+                  <div className="info-card">
+                    <div className="ic-hd"><div className="ic-title">👫 Roommates</div></div>
+                    <div className="ic-body">
+                      <div className="roommates">
+                        {roommates.map(rm => (
+                          <div key={rm.id} className="rm-item" style={{ border: 'none', padding: 0 }}>
+                            <div className="rm-av" style={{ background: 'linear-gradient(135deg,#1DB970,#5DE89A)' }}>
+                              {rm.first_name[0]}{rm.last_name[0]}
+                            </div>
+                            <div>
+                              <div className="rm-name">{rm.first_name} {rm.last_name}</div>
+                              <div className="rm-sub">{rm.purpose === 'working' ? 'Working' : 'Student'} · Since {rm.checkin_date ? new Date(rm.checkin_date).toLocaleDateString('en-IN', { month: 'short' }) : 'recently'}</div>
+                            </div>
+                            <div className="rm-status rm-online"></div>
+                          </div>
+                        ))}
+                      </div>
+                      {room && room.current_occupancy < room.capacity && (
+                        <div
+                          style={{ marginTop: 12, padding: '11px 13px', background: 'var(--orange-pale)', border: '1.5px dashed var(--orange-border)', borderRadius: 11, textAlign: 'center', cursor: 'pointer' }}
+                          onClick={() => setActiveScreen('refer')}
+                        >
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--orange)' }}>＋ Refer a Guest for this Room</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 2 }}>Bed available · sharing room</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="info-card">
+                  <div className="ic-hd"><div className="ic-title">📍 PG Details</div></div>
+                  <div className="ic-body">
+                    <div className="detail-rows">
+                      <div className="dr"><span className="dr-key">PG Name</span><span className="dr-val">{pg?.name || 'Sunshine Residency'}</span></div>
+                      <div className="dr"><span className="dr-key">Address</span><span className="dr-val" style={{ textAlign: 'right', maxWidth: '60%', wordBreak: 'break-word' }}>{pg?.address || 'Andheri West, Mumbai'}</span></div>
+                      <div className="dr"><span className="dr-key">Admin Contact</span><span className="dr-val" style={{ color: 'var(--orange)' }}>📞 {pg?.contact_phone || '9876543210'}</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -583,70 +587,52 @@ export default function GuestHome() {
               </div>
               <div style={{ fontSize: 12.5, color: '#C9A882', marginTop: 6 }}>Fill details · Admin will review and approve</div>
             </div>
-            <form className="refer-form" onSubmit={handleSubmitReferral}>
-              <div className="ref-info-banner">
-                <div className="rib-icon">💡</div>
-                <div className="rib-text">
-                  You&apos;re referring someone to <strong>{pg?.name || 'Sunshine Residency'}</strong>. The PG admin will review and approve the guest before they can move in.
+            <div className="screen-scroll">
+              <form className="refer-form" onSubmit={handleSubmitReferral}>
+                <div className="ref-info-banner">
+                  <div className="rib-icon">💡</div>
+                  <div className="rib-text">
+                    You&apos;re referring someone to <strong>{pg?.name || 'Sunshine Residency'}</strong>. The PG admin will review and approve the guest before they can move in.
+                  </div>
                 </div>
-              </div>
-              <div className="field">
-                <label>Guest Full Name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Rohit Sharma"
-                  value={refName}
-                  onChange={e => setRefName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label>Mobile Number *</label>
-                <input
-                  type="tel"
-                  placeholder="98765 XXXXX"
-                  value={refMobile}
-                  onChange={e => setRefMobile(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label>Purpose of Stay *</label>
-                <select value={refPurpose} onChange={e => setRefPurpose(e.target.value)}>
-                  <option value="student">Student</option>
-                  <option value="working">Working Professional</option>
-                  <option value="medical">Medical</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="field">
-                <label>Preferred Room</label>
-                <select value={refRoomPref} onChange={e => setRefRoomPref(e.target.value)}>
-                  <option value="mine">Same as mine (Room {room?.room_number || '104'})</option>
-                  <option value="any">Any available room</option>
-                  <option value="admin">Let admin decide</option>
-                </select>
-              </div>
-              <div className="field">
-                <label>Expected Move-in Date</label>
-                <input
-                  type="date"
-                  value={refMoveInDate}
-                  onChange={e => setRefMoveInDate(e.target.value)}
-                />
-              </div>
-              <div className="field">
-                <label>Additional Note</label>
-                <textarea
-                  placeholder="Anything the admin should know about this guest…"
-                  value={refNotes}
-                  onChange={e => setRefNotes(e.target.value)}
-                />
-              </div>
-              <button className="submit-btn" type="submit" disabled={submittingReferral}>
-                {submittingReferral ? 'Submitting...' : '🔗 Submit Referral'}
-              </button>
-            </form>
+                <div className="field">
+                  <label>Guest Full Name *</label>
+                  <input type="text" placeholder="e.g. Rohit Sharma" value={refName} onChange={e => setRefName(e.target.value)} required />
+                </div>
+                <div className="field">
+                  <label>Mobile Number *</label>
+                  <input type="tel" placeholder="98765 XXXXX" value={refMobile} onChange={e => setRefMobile(e.target.value)} required />
+                </div>
+                <div className="field">
+                  <label>Purpose of Stay *</label>
+                  <select value={refPurpose} onChange={e => setRefPurpose(e.target.value)}>
+                    <option value="student">Student</option>
+                    <option value="working">Working Professional</option>
+                    <option value="medical">Medical</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Preferred Room</label>
+                  <select value={refRoomPref} onChange={e => setRefRoomPref(e.target.value)}>
+                    <option value="mine">Same as mine (Room {room?.room_number || '104'})</option>
+                    <option value="any">Any available room</option>
+                    <option value="admin">Let admin decide</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Expected Move-in Date</label>
+                  <input type="date" value={refMoveInDate} onChange={e => setRefMoveInDate(e.target.value)} />
+                </div>
+                <div className="field">
+                  <label>Additional Note</label>
+                  <textarea placeholder="Anything the admin should know about this guest…" value={refNotes} onChange={e => setRefNotes(e.target.value)} />
+                </div>
+                <button className="submit-btn" type="submit" disabled={submittingReferral}>
+                  {submittingReferral ? 'Submitting...' : '🔗 Submit Referral'}
+                </button>
+              </form>
+            </div>
 
             <div className="bottom-nav">
               <div className="bn-item" onClick={() => setActiveScreen('home')}><div className="bn-icon">🏠</div><div className="bn-label">Home</div></div>
@@ -664,73 +650,75 @@ export default function GuestHome() {
               <div className="prof-pg">{pg?.name || 'Sunshine Residency'} · {pg?.city || 'Mumbai'}</div>
               <div className="prof-room-badge">🛏️ Room {room?.room_number || '104'} · Active</div>
             </div>
-            <div className="prof-body">
-              <div className="prof-section">
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>👤</div>
-                  <div className="ps-label">Personal Details</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: 'var(--green-pale)' }}>🪪</div>
-                  <div className="ps-label">ID Documents</div>
-                  <div className="ps-val">
-                    {documents.length > 0
-                      ? `${documents[0].doc_type.toUpperCase()} (${documents[0].verification_status})`
-                      : 'Not uploaded'}
+            <div className="screen-scroll">
+              <div className="prof-body">
+                <div className="prof-section">
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>👤</div>
+                    <div className="ps-label">Personal Details</div>
+                    <div className="ps-arrow">›</div>
                   </div>
-                  <div className="ps-arrow">›</div>
-                </div>
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: 'var(--amber-pale)' }}>🆘</div>
-                  <div className="ps-label">Emergency Contact</div>
-                  <div className="ps-val">{emergencyContact ? `${emergencyContact.name} (${emergencyContact.relation})` : 'Not added'}</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-              </div>
-
-              <div className="prof-section">
-                <div className="ps-item" onClick={() => setActiveScreen('room')}>
-                  <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>🛏️</div>
-                  <div className="ps-label">My Room</div>
-                  <div className="ps-val">Room {room?.room_number || '104'}</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: 'var(--green-pale)' }}>📅</div>
-                  <div className="ps-label">Check-in Date</div>
-                  <div className="ps-val">
-                    {guest.checkin_date ? new Date(guest.checkin_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: 'var(--green-pale)' }}>🪪</div>
+                    <div className="ps-label">ID Documents</div>
+                    <div className="ps-val">
+                      {documents.length > 0
+                        ? `${documents[0].doc_type.toUpperCase()} (${documents[0].verification_status})`
+                        : 'Not uploaded'}
+                    </div>
+                    <div className="ps-arrow">›</div>
                   </div>
-                  <div className="ps-arrow">›</div>
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: 'var(--amber-pale)' }}>🆘</div>
+                    <div className="ps-label">Emergency Contact</div>
+                    <div className="ps-val">{emergencyContact ? `${emergencyContact.name} (${emergencyContact.relation})` : 'Not added'}</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
                 </div>
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: '#EFF6FF' }}>💰</div>
-                  <div className="ps-label">Monthly Rent</div>
-                  <div className="ps-val" style={{ color: 'var(--orange)' }}>₹{guest.monthly_rent || 7500}</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-              </div>
 
-              <div className="prof-section">
-                <div className="ps-item">
-                  <div className="ps-ic" style={{ background: 'var(--red-pale)' }}>🔔</div>
-                  <div className="ps-label">Notifications</div>
-                  <div className="ps-arrow">›</div>
+                <div className="prof-section">
+                  <div className="ps-item" onClick={() => setActiveScreen('room')}>
+                    <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>🛏️</div>
+                    <div className="ps-label">My Room</div>
+                    <div className="ps-val">Room {room?.room_number || '104'}</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: 'var(--green-pale)' }}>📅</div>
+                    <div className="ps-label">Check-in Date</div>
+                    <div className="ps-val">
+                      {guest.checkin_date ? new Date(guest.checkin_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                    </div>
+                    <div className="ps-arrow">›</div>
+                  </div>
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: '#EFF6FF' }}>💰</div>
+                    <div className="ps-label">Monthly Rent</div>
+                    <div className="ps-val" style={{ color: 'var(--orange)' }}>₹{guest.monthly_rent || 7500}</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
                 </div>
-                <div className="ps-item" onClick={() => setIsChangePinOpen(true)}>
-                  <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>🔑</div>
-                  <div className="ps-label">Change Login PIN</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-                <div className="ps-item" onClick={handleLogout}>
-                  <div className="ps-ic" style={{ background: '#F0EDE8' }}>🚪</div>
-                  <div className="ps-label">Sign Out</div>
-                  <div className="ps-arrow">›</div>
-                </div>
-              </div>
 
-              <button className="logout-btn" onClick={handleLogout}>🚪 &nbsp;Log Out</button>
+                <div className="prof-section">
+                  <div className="ps-item">
+                    <div className="ps-ic" style={{ background: 'var(--red-pale)' }}>🔔</div>
+                    <div className="ps-label">Notifications</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
+                  <div className="ps-item" onClick={() => setIsChangePinOpen(true)}>
+                    <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>🔑</div>
+                    <div className="ps-label">Change Login PIN</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
+                  <div className="ps-item" onClick={handleLogout}>
+                    <div className="ps-ic" style={{ background: '#F0EDE8' }}>🚪</div>
+                    <div className="ps-label">Sign Out</div>
+                    <div className="ps-arrow">›</div>
+                  </div>
+                </div>
+
+                <button className="logout-btn" onClick={handleLogout}>🚪 &nbsp;Log Out</button>
+              </div>
             </div>
 
             <div className="bottom-nav">
@@ -840,11 +828,11 @@ export default function GuestHome() {
         .sb-time { font-size: 14px; font-weight: 800; color: #fff; }
         .sb-icons { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #fff; }
 
-        /* SCREEN CONTAINER */
         .screens { flex: 1; overflow: hidden; position: relative; }
-        .screen { position: absolute; inset: 0; overflow-y: auto; display: none; flex-direction: column; }
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
         .screen.active { display: flex; }
-        .screen::-webkit-scrollbar { display: none; }
+        .screen-scroll { flex: 1; overflow-y: auto; }
+        .screen-scroll::-webkit-scrollbar { display: none; }
 
         /* HOME SCREEN */
         .home-header {
@@ -884,7 +872,7 @@ export default function GuestHome() {
         .rh-badge { margin-left: auto; background: var(--green); color: #fff; font-size: 10.5px; font-weight: 800; padding: 4px 10px; border-radius: 20px; flex-shrink: 0; }
 
         /* SCROLL CONTENT */
-        .home-body { flex: 1; padding: 18px 18px 80px; display: flex; flex-direction: column; gap: 16px; }
+        .home-body { padding: 18px 18px 18px; display: flex; flex-direction: column; gap: 16px; }
 
         /* QUICK ACTIONS */
         .quick-actions { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
@@ -936,11 +924,11 @@ export default function GuestHome() {
 
         /* BOTTOM NAV */
         .bottom-nav {
-          position: absolute; bottom: 0; left: 0; right: 0;
           background: var(--white);
           border-top: 1px solid var(--border);
           display: flex;
           padding: 10px 0 14px;
+          flex-shrink: 0;
           z-index: 50;
         }
         .bn-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: all 0.15s; }
@@ -964,7 +952,7 @@ export default function GuestHome() {
         .rbc-item-label { font-size: 9.5px; color: #A07858; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
         .rbc-item-val { font-size: 13px; font-weight: 800; color: #fff; margin-top: 3px; }
 
-        .rs-body { padding: 18px 18px 80px; display: flex; flex-direction: column; gap: 16px; }
+        .rs-body { padding: 18px 18px 18px; display: flex; flex-direction: column; gap: 16px; }
 
         .info-card { background: var(--white); border-radius: var(--r); border: 1px solid var(--border); overflow: hidden; }
         .ic-hd { padding: 13px 16px 11px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
@@ -979,9 +967,8 @@ export default function GuestHome() {
         .amenity-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
         .achip { background: var(--orange-pale); color: var(--orange); border-radius: 20px; padding: 5px 11px; font-size: 11.5px; font-weight: 700; }
 
-        /* REFER SCREEN */
         .refer-hd { background: linear-gradient(160deg, #1C0F05, #3D1F08); padding: 18px 22px 22px; }
-        .refer-form { padding: 18px 18px 80px; display: flex; flex-direction: column; gap: 14px; }
+        .refer-form { padding: 18px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
         .field { display: flex; flex-direction: column; gap: 5px; }
         .field label { font-size: 11px; font-weight: 800; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.8px; }
         .field input, .field select, .field textarea {
@@ -1005,7 +992,7 @@ export default function GuestHome() {
         .prof-pg { font-size: 12.5px; color: #C9A882; }
         .prof-room-badge { background: rgba(244,112,10,0.25); border: 1px solid rgba(244,112,10,0.4); color: var(--orange-light); font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-top: 2px; }
 
-        .prof-body { padding: 18px 18px 80px; display: flex; flex-direction: column; gap: 12px; }
+        .prof-body { padding: 18px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
         .prof-section { background: var(--white); border-radius: var(--r); border: 1px solid var(--border); overflow: hidden; }
         .ps-item { display: flex; align-items: center; gap: 13px; padding: 13px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
         .ps-item:last-child { border-bottom: none; }
