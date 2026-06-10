@@ -331,6 +331,15 @@ export default function FloorRoomBuilder() {
       return
     }
 
+    // Validate unique floor name
+    const isDuplicate = floors.some(
+      f => f.floor_name.toLowerCase().trim() === newFloorName.toLowerCase().trim()
+    )
+    if (isDuplicate) {
+      toast.error(`A floor named "${newFloorName.trim()}" already exists in this PG`)
+      return
+    }
+
     try {
       const maxFloorNum = floors.reduce((max, f) => Math.max(max, f.floor_number), -1)
       const nextFloorNum = maxFloorNum + 1
@@ -813,15 +822,23 @@ export default function FloorRoomBuilder() {
                       </select>
                     </div>
                     <div className="field">
-                      <label>Default Room Capacity</label>
+                      <label>Default Room Type</label>
                       <select
-                        value={defaultCapacity}
-                        onChange={e => setDefaultCapacity(Number(e.target.value))}
+                        value={defaultRoomType}
+                        onChange={e => {
+                          const val = e.target.value
+                          setDefaultRoomType(val)
+                          if (val === 'single') setDefaultCapacity(1)
+                          else if (val === 'double') setDefaultCapacity(2)
+                          else if (val === 'triple') setDefaultCapacity(3)
+                          else if (val === 'quad') setDefaultCapacity(4)
+                        }}
                       >
-                        <option value="1">1 (Single)</option>
-                        <option value="2">2 (Double)</option>
-                        <option value="3">3 (Triple)</option>
-                        <option value="4">4 (4 Sharing)</option>
+                        <option value="single">Single</option>
+                        <option value="double">Double (Sharing)</option>
+                        <option value="triple">Triple (Sharing)</option>
+                        <option value="quad">4 Sharing</option>
+                        <option value="dormitory">Dormitory</option>
                       </select>
                     </div>
                   </div>
@@ -835,23 +852,15 @@ export default function FloorRoomBuilder() {
                     />
                   </div>
                   <div className="field">
-                    <label>Default Room Type</label>
+                    <label>Default Room Capacity</label>
                     <select
-                      value={defaultRoomType}
-                      onChange={e => {
-                        const val = e.target.value
-                        setDefaultRoomType(val)
-                        if (val === 'single') setDefaultCapacity(1)
-                        else if (val === 'double') setDefaultCapacity(2)
-                        else if (val === 'triple') setDefaultCapacity(3)
-                        else if (val === 'quad') setDefaultCapacity(4)
-                      }}
+                      value={defaultCapacity}
+                      onChange={e => setDefaultCapacity(Number(e.target.value))}
                     >
-                      <option value="single">Single</option>
-                      <option value="double">Double (Sharing)</option>
-                      <option value="triple">Triple (Sharing)</option>
-                      <option value="quad">4 Sharing</option>
-                      <option value="dormitory">Dormitory</option>
+                      <option value="1">1 (Single)</option>
+                      <option value="2">2 (Double)</option>
+                      <option value="3">3 (Triple)</option>
+                      <option value="4">4 (4 Sharing)</option>
                     </select>
                   </div>
                 </div>
