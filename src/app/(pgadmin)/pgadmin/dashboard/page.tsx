@@ -164,10 +164,8 @@ export default async function PGAdminDashboard() {
                 const room = g.rooms as unknown as { room_number: string } | null
                 const initials = `${g.first_name[0]}${g.last_name[0]}`.toUpperCase()
                 return (
-                  <div key={g.id} className="flex items-center gap-2.5 p-2.5 rounded-[11px] transition-all cursor-pointer"
-                    style={{ background: '#FAF6F2', border: '1px solid #EDE0D4' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#FFD9B8'; (e.currentTarget as HTMLElement).style.background = '#FFF4EC' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#EDE0D4'; (e.currentTarget as HTMLElement).style.background = '#FAF6F2' }}>
+                  <div key={g.id} className="flex items-center gap-2.5 p-2.5 rounded-[11px] transition-all cursor-pointer border border-[#EDE0D4] hover:border-[#FFD9B8] hover:bg-[#FFF4EC]"
+                    style={{ background: '#FAF6F2' }}>
                     <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                       style={{ background: 'linear-gradient(135deg,#F4700A,#FFAA60)' }}>{initials}</div>
                     <div className="flex-1">
@@ -212,9 +210,7 @@ export default async function PGAdminDashboard() {
                 const initials = `${g.first_name[0]}${g.last_name[0]}`.toUpperCase()
                 const colors   = ['linear-gradient(135deg,#F4700A,#FFAA60)', 'linear-gradient(135deg,#1DB970,#5DE89A)', 'linear-gradient(135deg,#7C3AED,#A78BFA)', 'linear-gradient(135deg,#2563EB,#60A5FA)', 'linear-gradient(135deg,#E53935,#FF7B7B)']
                 return (
-                  <tr key={g.id} className="cursor-pointer transition-all" style={{ borderBottom: idx < recentGuests.length - 1 ? '1px solid #F5EDE5' : 'none' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FFF4EC'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                  <tr key={g.id} className="cursor-pointer transition-all hover:bg-[#FFF4EC]" style={{ borderBottom: idx < recentGuests.length - 1 ? '1px solid #F5EDE5' : 'none' }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
