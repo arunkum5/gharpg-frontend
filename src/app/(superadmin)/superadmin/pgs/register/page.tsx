@@ -56,10 +56,10 @@ export default function RegisterPG() {
   const [floorsCount, setFloorsCount] = useState(3)
   const [approxRoomsCount, setApproxRoomsCount] = useState(20)
   const [description, setDescription] = useState('')
-  const [address, setAddress] = useState('12, Sunshine Apartments, Lokhandwala Complex')
-  const [city, setCity] = useState('Mumbai')
-  const [state, setState] = useState('Maharashtra')
-  const [pinCode, setPinCode] = useState('400053')
+  const [address, setAddress] = useState('12, 5th Cross, Koramangala')
+  const [city, setCity] = useState('Bengaluru')
+  const [state, setState] = useState('Karnataka')
+  const [pinCode, setPinCode] = useState('560034')
   const [mapsLink, setMapsLink] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [contactEmail, setContactEmail] = useState('')
@@ -68,13 +68,13 @@ export default function RegisterPG() {
   const [amenities, setAmenities] = useState<string[]>([
     'Food Provided', 'WiFi / Internet', 'Laundry', 'Parking', '24/7 Security', 'First Aid Kit'
   ])
-  const [minRent, setMinRent] = useState(6000)
-  const [maxRent, setMaxRent] = useState(10000)
-  const [securityDeposit, setSecurityDeposit] = useState(15000)
+  const [minRent, setMinRent] = useState(10000)
+  const [maxRent, setMaxRent] = useState(20000)
+  const [securityDeposit, setSecurityDeposit] = useState(20000)
   const [checkinCutoffTime, setCheckinCutoffTime] = useState('22:00')
   const [noticePeriodMonths, setNoticePeriodMonths] = useState(2)
   const [rules, setRules] = useState(
-    'No smoking on premises. Visitors allowed till 9:00 PM only. Maintain common area cleanliness.'
+    'No smoking or drinking allowed on the premises. Visitors are not allowed inside guest rooms and are permitted only in the common meeting lounge. Maintain common area cleanliness.'
   )
 
   // Step 3: Admin Assignment
@@ -427,25 +427,56 @@ export default function RegisterPG() {
                         <label>City <span className="req">*</span></label>
                         <input
                           type="text"
-                          placeholder="e.g. Mumbai"
+                          placeholder="e.g. Bengaluru"
                           value={city}
                           onChange={e => setCity(e.target.value)}
                         />
                       </div>
                       <div className="field">
                         <label>State <span className="req">*</span></label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Maharashtra"
+                        <select
                           value={state}
                           onChange={e => setState(e.target.value)}
-                        />
+                        >
+                          <option value="Andhra Pradesh">Andhra Pradesh</option>
+                          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                          <option value="Assam">Assam</option>
+                          <option value="Bihar">Bihar</option>
+                          <option value="Chhattisgarh">Chhattisgarh</option>
+                          <option value="Goa">Goa</option>
+                          <option value="Gujarat">Gujarat</option>
+                          <option value="Haryana">Haryana</option>
+                          <option value="Himachal Pradesh">Himachal Pradesh</option>
+                          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                          <option value="Jharkhand">Jharkhand</option>
+                          <option value="Karnataka">Karnataka</option>
+                          <option value="Kerala">Kerala</option>
+                          <option value="Madhya Pradesh">Madhya Pradesh</option>
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Manipur">Manipur</option>
+                          <option value="Meghalaya">Meghalaya</option>
+                          <option value="Mizoram">Mizoram</option>
+                          <option value="Nagaland">Nagaland</option>
+                          <option value="Odisha">Odisha</option>
+                          <option value="Punjab">Punjab</option>
+                          <option value="Rajasthan">Rajasthan</option>
+                          <option value="Sikkim">Sikkim</option>
+                          <option value="Tamil Nadu">Tamil Nadu</option>
+                          <option value="Telangana">Telangana</option>
+                          <option value="Tripura">Tripura</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          <option value="Uttarakhand">Uttarakhand</option>
+                          <option value="West Bengal">West Bengal</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Chandigarh">Chandigarh</option>
+                          <option value="Puducherry">Puducherry</option>
+                        </select>
                       </div>
                       <div className="field">
                         <label>PIN Code</label>
                         <input
                           type="text"
-                          placeholder="400053"
+                          placeholder="560034"
                           value={pinCode}
                           onChange={e => setPinCode(e.target.value)}
                         />
