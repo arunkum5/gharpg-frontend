@@ -1,7 +1,7 @@
 export type UserRole        = 'superadmin' | 'pgadmin' | 'guest'
 export type PGPropertyType  = 'boys' | 'girls' | 'coliving'
 export type AdminAccess     = 'full' | 'limited' | 'view_only'
-export type RoomType        = 'single' | 'double' | 'triple' | 'dormitory'
+export type RoomType        = 'single' | 'double' | 'triple' | 'quad' | 'dormitory'
 export type RoomStatus      = 'free' | 'partial' | 'full'
 export type GenderType      = 'male' | 'female' | 'other'
 export type PurposeType     = 'student' | 'working' | 'medical' | 'other'

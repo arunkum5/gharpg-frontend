@@ -32,7 +32,7 @@ export default function FloorRoomBuilder() {
   const [newRoomsPerRow, setNewRoomsPerRow] = useState(3)
   const [defaultCapacity, setDefaultCapacity] = useState(2)
   const [defaultRoomType, setDefaultRoomType] = useState('double')
-  const [defaultRent, setDefaultRent] = useState(7500)
+  const [defaultRent, setDefaultRent] = useState(10000)
 
   // Edit Room form states
   const [editRoomNum, setEditRoomNum] = useState('')
@@ -41,7 +41,7 @@ export default function FloorRoomBuilder() {
   const [editRoomType, setEditRoomType] = useState('double')
   const [editCapacity, setEditCapacity] = useState(2)
   const [editStatus, setEditStatus] = useState('free')
-  const [editRent, setEditRent] = useState(7500)
+  const [editRent, setEditRent] = useState(10000)
   const [editNotes, setEditNotes] = useState('')
   const [editAmenities, setEditAmenities] = useState<string[]>([])
 
@@ -504,6 +504,7 @@ export default function FloorRoomBuilder() {
                   <option value="single">Single</option>
                   <option value="double">Double (Sharing)</option>
                   <option value="triple">Triple (Sharing)</option>
+                  <option value="quad">4 Sharing</option>
                   <option value="dormitory">Dormitory</option>
                 </select>
               </div>
@@ -517,15 +518,24 @@ export default function FloorRoomBuilder() {
                 <div className="canvas-title">Visual Floor Map</div>
                 <div className="canvas-sub">Click a room to edit details or delete</div>
               </div>
-              <div className="canvas-legend">
-                <div className="cleg">
-                  <div className="cleg-dot" style={{ background: '#A8EDD0' }}></div> Free
+              <div className="canvas-legend" style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <div className="cleg">
+                    <div className="cleg-dot" style={{ background: '#A8EDD0' }}></div> Free
+                  </div>
+                  <div className="cleg">
+                    <div className="cleg-dot" style={{ background: '#FAD898' }}></div> Partial
+                  </div>
+                  <div className="cleg">
+                    <div className="cleg-dot" style={{ background: '#F5C6C5' }}></div> Full
+                  </div>
                 </div>
-                <div className="cleg">
-                  <div className="cleg-dot" style={{ background: '#FAD898' }}></div> Partial
-                </div>
-                <div className="cleg">
-                  <div className="cleg-dot" style={{ background: '#F5C6C5' }}></div> Full
+                <div style={{ display: 'flex', gap: 10, fontSize: 10, opacity: 0.85, marginTop: 2 }}>
+                  <div className="cleg" style={{ display: 'flex', alignItems: 'center' }}><span style={{ width: 10, height: 4, borderRadius: 2, background: '#3B82F6', marginRight: 4 }}></span> Single</div>
+                  <div className="cleg" style={{ display: 'flex', alignItems: 'center' }}><span style={{ width: 10, height: 4, borderRadius: 2, background: '#8B5CF6', marginRight: 4 }}></span> Double</div>
+                  <div className="cleg" style={{ display: 'flex', alignItems: 'center' }}><span style={{ width: 10, height: 4, borderRadius: 2, background: '#F59E0B', marginRight: 4 }}></span> Triple</div>
+                  <div className="cleg" style={{ display: 'flex', alignItems: 'center' }}><span style={{ width: 10, height: 4, borderRadius: 2, background: '#EC4899', marginRight: 4 }}></span> 4 Sharing</div>
+                  <div className="cleg" style={{ display: 'flex', alignItems: 'center' }}><span style={{ width: 10, height: 4, borderRadius: 2, background: '#10B981', marginRight: 4 }}></span> Dorm</div>
                 </div>
               </div>
             </div>
@@ -569,10 +579,10 @@ export default function FloorRoomBuilder() {
                                   className={`rc ${statusClass} ${isSel ? 'selected' : ''}`}
                                   onClick={() => openRoomDetails(room)}
                                 >
+                                  <div className={`rc-type-stripe stripe-${room.room_type}`} />
                                   <div className="rc-num">{room.room_number}</div>
                                   <div className="rc-type">
-                                    {room.room_type.charAt(0).toUpperCase() +
-                                      room.room_type.slice(1)}
+                                    {room.room_type === 'quad' ? '4 Sharing' : room.room_type.charAt(0).toUpperCase() + room.room_type.slice(1)}
                                   </div>
                                   <div className="rc-cap">
                                     {room.current_occupancy}/{room.capacity}
@@ -654,15 +664,17 @@ export default function FloorRoomBuilder() {
                       { type: 'single', ic: '🛏️', nm: 'Single' },
                       { type: 'double', ic: '🛏🛏', nm: 'Double' },
                       { type: 'triple', ic: '🛏🛏🛏', nm: 'Triple' },
+                      { type: 'quad', ic: '🛏🛏🛏🛏', nm: '4 Sharing' },
                       { type: 'dormitory', ic: '🏨', nm: 'Dorm' }
                     ].map(t => (
                       <div
                         key={t.type}
                         className={`type-btn ${editRoomType === t.type ? 'sel' : ''}`}
                         onClick={() => setEditRoomType(t.type)}
+                        style={{ padding: '6px 4px' }}
                       >
-                        <div className="type-ic">{t.ic}</div>
-                        <div className="type-nm">{t.nm}</div>
+                        <div className="type-ic" style={{ fontSize: 13 }}>{t.ic}</div>
+                        <div className="type-nm" style={{ fontSize: 10.5 }}>{t.nm}</div>
                       </div>
                     ))}
                   </div>
@@ -789,6 +801,7 @@ export default function FloorRoomBuilder() {
                         <option value="1">1 (Single)</option>
                         <option value="2">2 (Double)</option>
                         <option value="3">3 (Triple)</option>
+                        <option value="4">4 (4 Sharing)</option>
                       </select>
                     </div>
                   </div>
@@ -810,6 +823,7 @@ export default function FloorRoomBuilder() {
                       <option value="single">Single</option>
                       <option value="double">Double (Sharing)</option>
                       <option value="triple">Triple (Sharing)</option>
+                      <option value="quad">4 Sharing</option>
                       <option value="dormitory">Dormitory</option>
                     </select>
                   </div>
@@ -875,7 +889,7 @@ export default function FloorRoomBuilder() {
         .section-head { font-size: 12px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
         .section-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
 
-        .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+        .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
         .type-btn {
           border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 10px;
           text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg);
@@ -959,6 +973,20 @@ export default function FloorRoomBuilder() {
         .rc-num { font-size: 13px; font-weight: 800; }
         .rc-type { font-size: 9.5px; font-weight: 600; opacity: 0.8; margin-top: 1px; }
         .rc-cap { font-size: 9px; font-weight: 700; opacity: 0.7; margin-top: 1px; }
+
+        .rc-type-stripe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4.5px;
+          border-radius: 12px 12px 0 0;
+        }
+        .rc-type-stripe.stripe-single { background: #3B82F6; }
+        .rc-type-stripe.stripe-double { background: #8B5CF6; }
+        .rc-type-stripe.stripe-triple { background: #F59E0B; }
+        .rc-type-stripe.stripe-quad { background: #EC4899; }
+        .rc-type-stripe.stripe-dormitory { background: #10B981; }
 
         .rc-free    { background: var(--green-pale); color: var(--green); border-color: #A8EDD0; }
         .rc-full    { background: var(--red-pale);   color: var(--red);   border-color: #F5C6C5; }
