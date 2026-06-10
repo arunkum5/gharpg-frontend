@@ -414,7 +414,8 @@ export default function AddGuest() {
                         type="tel"
                         placeholder="e.g. 9876543210"
                         value={mobile}
-                        onChange={e => setMobile(e.target.value)}
+                        maxLength={10}
+                        onChange={e => setMobile(e.target.value.replace(/\D/g, ''))}
                       />
                     </div>
                     <div className="field">
@@ -525,6 +526,12 @@ export default function AddGuest() {
                       type="text"
                       placeholder="e.g. XXXX XXXX XXXX"
                       value={docNumber}
+                      maxLength={
+                        docType === 'aadhaar' ? 12
+                        : docType === 'pan' ? 10
+                        : docType === 'passport' ? 8
+                        : undefined
+                      }
                       onChange={e => setDocNumber(e.target.value)}
                     />
                   </div>
@@ -578,7 +585,8 @@ export default function AddGuest() {
                       type="tel"
                       placeholder="e.g. 9876500000"
                       value={contactMobile}
-                      onChange={e => setContactMobile(e.target.value)}
+                      maxLength={10}
+                      onChange={e => setContactMobile(e.target.value.replace(/\D/g, ''))}
                     />
                   </div>
                 </div>
