@@ -14,10 +14,34 @@ export default async function SuperAdminDashboard() {
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
-  // Platform totals
-  const { count: totalGuests }  = await supabase.from('guests').select('*', { count: 'exact', head: true }).eq('status', 'active')
-  const { count: totalRooms }   = await supabase.from('rooms').select('*', { count: 'exact', head: true })
-  const { count: pendingCount } = await supabase.from('guests').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending')
+  const pgIds = (pgs || []).map(p => p.id)
+
+  let totalGuests = 0
+  let totalRooms = 0
+  let pendingCount = 0
+
+  if (pgIds.length > 0) {
+    const [guestsRes, roomsRes, pendingRes] = await Promise.all([
+      supabase
+        .from('guests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .in('pg_id', pgIds),
+      supabase
+        .from('rooms')
+        .select('*', { count: 'exact', head: true })
+        .in('pg_id', pgIds),
+      supabase
+        .from('guests')
+        .select('*', { count: 'exact', head: true })
+        .eq('approval_status', 'pending')
+        .in('pg_id', pgIds)
+    ])
+
+    totalGuests = guestsRes.count || 0
+    totalRooms = roomsRes.count || 0
+    pendingCount = pendingRes.count || 0
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
