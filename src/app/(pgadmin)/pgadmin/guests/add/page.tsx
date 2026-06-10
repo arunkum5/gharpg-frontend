@@ -141,8 +141,36 @@ export default function AddGuest() {
 
   // Handle form submission
   async function handleSubmit() {
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim()) {
-      toast.error('Please fill in Name, Mobile Number, and Email')
+    if (!firstName.trim()) {
+      toast.error('Please enter the First Name')
+      return
+    }
+    if (!lastName.trim()) {
+      toast.error('Please enter the Last Name')
+      return
+    }
+    if (!mobile.trim()) {
+      toast.error('Please enter the Mobile Number')
+      return
+    }
+    if (!email.trim()) {
+      toast.error('Please enter the Email Address')
+      return
+    }
+    if (!docNumber.trim()) {
+      toast.error('Please enter the ID Number')
+      return
+    }
+    if (!contactName.trim()) {
+      toast.error('Please enter the Emergency Contact Name')
+      return
+    }
+    if (!contactMobile.trim()) {
+      toast.error('Please enter the Emergency Contact Mobile Number')
+      return
+    }
+    if (!checkinDate) {
+      toast.error('Please select a Check-in Date')
       return
     }
     if (!selectedRoomId) {
@@ -345,7 +373,9 @@ export default function AddGuest() {
                   </div>
 
                   <div className="field">
-                    <label>Email Address</label>
+                    <label>
+                      Email Address <span className="req">*</span>
+                    </label>
                     <input
                       type="email"
                       placeholder="arjun@email.com"
