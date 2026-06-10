@@ -149,26 +149,77 @@ export default function AddGuest() {
       toast.error('Please enter the Last Name')
       return
     }
-    if (!mobile.trim()) {
+
+    const cleanMobile = mobile.trim().replace(/[-\s]+/g, '')
+    if (!cleanMobile) {
       toast.error('Please enter the Mobile Number')
       return
     }
+    if (!/^\d{10}$/.test(cleanMobile)) {
+      toast.error('Mobile Number must be exactly 10 digits')
+      return
+    }
+
+    if (!dob) {
+      toast.error('Please enter the Date of Birth')
+      return
+    }
+    const dobDate = new Date(dob)
+    if (isNaN(dobDate.getTime())) {
+      toast.error('Please enter a valid Date of Birth')
+      return
+    }
+    const today = new Date()
+    if (dobDate >= today) {
+      toast.error('Date of Birth must be in the past')
+      return
+    }
+    const age = today.getFullYear() - dobDate.getFullYear()
+    const monthDiff = today.getMonth() - dobDate.getMonth()
+    const dayDiff = today.getDate() - dobDate.getDate()
+    const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age
+    if (actualAge < 15) {
+      toast.error('Guest must be at least 15 years old')
+      return
+    }
+
     if (!email.trim()) {
       toast.error('Please enter the Email Address')
       return
     }
-    if (!docNumber.trim()) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Please enter a valid Email Address')
+      return
+    }
+
+    const cleanDocNum = docNumber.trim().replace(/[-\s]+/g, '')
+    if (!cleanDocNum) {
       toast.error('Please enter the ID Number')
       return
     }
+    if (docType === 'aadhaar') {
+      if (!/^\d{12}$/.test(cleanDocNum)) {
+        toast.error('Aadhaar Card number must be exactly 12 digits')
+        return
+      }
+    }
+
     if (!contactName.trim()) {
       toast.error('Please enter the Emergency Contact Name')
       return
     }
-    if (!contactMobile.trim()) {
+
+    const cleanContactMobile = contactMobile.trim().replace(/[-\s]+/g, '')
+    if (!cleanContactMobile) {
       toast.error('Please enter the Emergency Contact Mobile Number')
       return
     }
+    if (!/^\d{10}$/.test(cleanContactMobile)) {
+      toast.error('Emergency Contact Mobile Number must be exactly 10 digits')
+      return
+    }
+
     if (!checkinDate) {
       toast.error('Please select a Check-in Date')
       return
@@ -190,7 +241,7 @@ export default function AddGuest() {
       const authRes = await createGuestAuthAction(
         email.trim(),
         firstName.trim() + ' ' + lastName.trim(),
-        mobile.trim()
+        cleanMobile
       )
       if (!authRes.success) {
         throw new Error(authRes.error || 'Failed to create guest user account')
@@ -225,26 +276,26 @@ export default function AddGuest() {
       if (guestErr) throw guestErr
 
       // 2. Insert Emergency Contact
-      if (contactName.trim() && contactMobile.trim()) {
+      if (contactName.trim() && cleanContactMobile) {
         const { error: contactErr } = await supabase
           .from('emergency_contacts')
           .insert({
             guest_id: guestData.id,
             name: contactName.trim(),
             relation: contactRelation,
-            phone: contactMobile.trim()
+            phone: cleanContactMobile
           })
         if (contactErr) throw contactErr
       }
 
       // 3. Insert Documents
-      if (docNumber.trim()) {
+      if (cleanDocNum) {
         const { error: docErr } = await supabase
           .from('guest_documents')
           .insert({
             guest_id: guestData.id,
             doc_type: docType,
-            doc_number: docNumber.trim(),
+            doc_number: cleanDocNum,
             verification_status: 'verified' // Auto verified by admin
           })
         if (docErr) throw docErr
@@ -367,7 +418,9 @@ export default function AddGuest() {
                       />
                     </div>
                     <div className="field">
-                      <label>Date of Birth</label>
+                      <label>
+                        Date of Birth <span className="req">*</span>
+                      </label>
                       <input type="date" value={dob} onChange={e => setDob(e.target.value)} />
                     </div>
                   </div>
