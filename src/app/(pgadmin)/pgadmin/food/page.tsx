@@ -424,24 +424,26 @@ export default function FoodMenuPage() {
 
         /* ── Day tabs column */
         .day-tabs-col {
-          width: 108px;
+          width: 160px;
           flex-shrink: 0;
           background: var(--white);
           border-right: 1px solid var(--border);
           display: flex;
           flex-direction: column;
-          overflow-y: auto;
-          scrollbar-width: thin;
+          overflow: hidden;
         }
         .day-tabs-header {
           padding: 16px 14px 10px;
           border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
         }
         .day-tabs-list {
           display: flex;
           flex-direction: column;
           gap: 4px;
           padding: 10px 10px;
+          overflow-y: auto;
+          scrollbar-width: thin;
         }
         .day-tab {
           display: flex;
@@ -488,15 +490,16 @@ export default function FoodMenuPage() {
 
         /* ── Week stats */
         .week-stats {
-          margin-top: auto;
           padding: 14px 12px 16px;
           border-top: 1px solid var(--border);
+          flex-shrink: 0;
         }
         .week-stat-row {
           display: flex;
           align-items: center;
-          gap: 5px;
-          margin-bottom: 7px;
+          gap: 6px;
+          margin-bottom: 8px;
+          flex-wrap: nowrap;
         }
 
         /* ── Meals panel */
