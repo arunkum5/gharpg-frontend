@@ -57,12 +57,20 @@ interface EmergencyContact {
   phone: string
 }
 
+interface FoodMenu {
+  id: string
+  day_of_week: number
+  meal_type: string
+  items: string
+  is_active: boolean
+}
+
 export default function GuestHome() {
   const router = useRouter()
   const supabase = createClient()
 
   // Navigation
-  const [activeScreen, setActiveScreen] = useState<'home' | 'room' | 'refer' | 'profile'>('home')
+  const [activeScreen, setActiveScreen] = useState<'home' | 'room' | 'refer' | 'profile' | 'food'>('home')
 
   // Loading & Data states
   const [loading, setLoading] = useState(true)
@@ -75,6 +83,7 @@ export default function GuestHome() {
   const [notice, setNotice] = useState<Notice | null>(null)
   const [documents, setDocuments] = useState<GuestDoc[]>([])
   const [emergencyContact, setEmergencyContact] = useState<EmergencyContact | null>(null)
+  const [foodMenu, setFoodMenu] = useState<FoodMenu[]>([])
   
   // Is showing demo profile warning
   const [isDemoMode, setIsDemoMode] = useState(false)
@@ -162,6 +171,13 @@ export default function GuestHome() {
         if (noticeRes.data) setNotice(noticeRes.data as Notice)
         if (docsRes.data) setDocuments(docsRes.data as GuestDoc[])
         if (contactRes.data) setEmergencyContact(contactRes.data as EmergencyContact)
+
+        const { data: foodData } = await supabase
+          .from('food_menu')
+          .select('id, day_of_week, meal_type, items, is_active')
+          .eq('pg_id', guestData.pg_id)
+          .eq('is_active', true)
+        if (foodData) setFoodMenu(foodData as FoodMenu[])
       }
     } catch (e) {
       console.error('Error fetching guest data:', e)
@@ -360,7 +376,7 @@ export default function GuestHome() {
                       <div className="qa-icon" style={{ background: 'var(--green-pale)' }}>🔗</div>
                       <div className="qa-label">Refer Guest</div>
                     </div>
-                    <div className="qa-item">
+                    <div className="qa-item" onClick={() => setActiveScreen('food')}>
                       <div className="qa-icon" style={{ background: 'var(--amber-pale)' }}>🍱</div>
                       <div className="qa-label">Food Menu</div>
                     </div>
@@ -641,6 +657,96 @@ export default function GuestHome() {
               <div className="bn-item" onClick={() => setActiveScreen('profile')}><div className="bn-icon">👤</div><div className="bn-label">Profile</div></div>
             </div>
           </div>
+
+          {/* ═══════════ FOOD SCREEN ═══════════ */}
+          {(() => {
+            const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            const MEAL_ICONS: Record<string, string> = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snacks: '🍿' }
+            const todayIdx = new Date().getDay()
+            const todayMeals = foodMenu.filter(m => m.day_of_week === todayIdx)
+            const otherDays = Array.from({ length: 7 }, (_, i) => i)
+              .filter(i => i !== todayIdx)
+              .map(dayIdx => ({
+                dayIdx,
+                meals: foodMenu.filter(m => m.day_of_week === dayIdx)
+              }))
+              .filter(d => d.meals.length > 0)
+            return (
+              <div className={`screen ${activeScreen === 'food' ? 'active' : ''}`}>
+                <div className="food-hd">
+                  <div className="rs-hd-top">
+                    <div className="rs-back" onClick={() => setActiveScreen('home')}>←</div>
+                    <div className="rs-hd-title">Food Menu</div>
+                  </div>
+                  <div style={{ marginTop: 4, fontSize: 12, color: '#C9A882' }}>
+                    Today is <strong style={{ color: '#fff' }}>{DAYS[todayIdx]}</strong>
+                  </div>
+                </div>
+                <div className="screen-scroll">
+                  <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {/* TODAY SECTION */}
+                    <div>
+                      <div className="sec-hd">
+                        <div className="sec-title">📅 Today&apos;s Menu</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--orange)', background: 'var(--orange-pale)', padding: '3px 10px', borderRadius: 20 }}>{DAYS[todayIdx]}</div>
+                      </div>
+                      {todayMeals.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '32px 16px', background: 'var(--white)', borderRadius: 14, border: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: 36, marginBottom: 10 }}>🍽️</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>No menu set by admin yet</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-soft)', marginTop: 4 }}>Check back later for today&apos;s meals</div>
+                        </div>
+                      ) : (
+                        todayMeals.map(meal => (
+                          <div key={meal.id} className="meal-card">
+                            <div className="meal-card-hd">
+                              <span>{MEAL_ICONS[meal.meal_type] ?? '🍴'}</span>
+                              <span style={{ textTransform: 'capitalize' }}>{meal.meal_type}</span>
+                            </div>
+                            <div className="meal-chips">
+                              {meal.items.split(',').map(item => item.trim()).filter(Boolean).map((item, idx) => (
+                                <span key={idx} className="meal-chip">{item}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* THIS WEEK SECTION */}
+                    {otherDays.length > 0 && (
+                      <div>
+                        <div className="sec-hd">
+                          <div className="sec-title">📆 This Week</div>
+                        </div>
+                        {otherDays.map(({ dayIdx, meals }) => (
+                          <div key={dayIdx} className="week-day-block">
+                            <div className="wdb-hd">{DAYS[dayIdx]}</div>
+                            <div className="wdb-body">
+                              {meals.map(meal => (
+                                <div key={meal.id} className="wdb-row">
+                                  <span style={{ fontSize: 14 }}>{MEAL_ICONS[meal.meal_type] ?? '🍴'}</span>
+                                  <span className="wdb-label" style={{ textTransform: 'capitalize' }}>{meal.meal_type}</span>
+                                  <span className="wdb-items">{meal.items.split(',').map(s => s.trim()).filter(Boolean).join(' · ')}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bottom-nav">
+                  <div className="bn-item active" onClick={() => setActiveScreen('home')}><div className="bn-icon">🏠</div><div className="bn-label">Home</div></div>
+                  <div className="bn-item" onClick={() => setActiveScreen('room')}><div className="bn-icon">🛏️</div><div className="bn-label">My Room</div></div>
+                  <div className="bn-item" onClick={() => setActiveScreen('refer')}><div className="bn-icon">🔗</div><div className="bn-label">Refer</div></div>
+                  <div className="bn-item" onClick={() => setActiveScreen('profile')}><div className="bn-icon">👤</div><div className="bn-label">Profile</div></div>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* ═══════════ PROFILE SCREEN ═══════════ */}
           <div className={`screen ${activeScreen === 'profile' ? 'active' : ''}`}>
@@ -985,6 +1091,19 @@ export default function GuestHome() {
         .rib-icon { font-size: 22px; flex-shrink: 0; }
         .rib-text { font-size: 12.5px; font-weight: 600; color: var(--text-mid); line-height: 1.5; }
 
+        /* FOOD SCREEN */
+        .food-hd { background: linear-gradient(160deg, #1C0F05, #3D1F08); padding: 18px 22px 22px; }
+        .meal-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 10px; }
+        .meal-card-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 800; font-size: 13px; }
+        .meal-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .meal-chip { background: var(--orange-pale); color: var(--orange); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
+        .week-day-block { background: var(--white); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden; }
+        .wdb-hd { padding: 10px 14px; background: var(--bg); font-weight: 800; font-size: 12px; color: var(--text-mid); border-bottom: 1px solid var(--border); }
+        .wdb-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+        .wdb-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .wdb-label { color: var(--text-soft); width: 70px; font-weight: 600; flex-shrink: 0; }
+        .wdb-items { color: var(--text); font-weight: 600; }
+
         /* PROFILE SCREEN */
         .prof-header { background: linear-gradient(160deg, #1C0F05, #3D1F08); padding: 18px 22px 28px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .prof-av { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #FF6B00); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #fff; border: 3px solid rgba(255,255,255,0.2); }
@@ -1003,6 +1122,15 @@ export default function GuestHome() {
         .ps-arrow { color: var(--text-soft); font-size: 12px; }
 
         .logout-btn { background: var(--red-pale); color: var(--red); border: 1.5px solid #F5C6C5; border-radius: 13px; padding: 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; width: 100%; }
+
+        .drawer-overlay {
+          position: absolute; inset: 0;
+          background: rgba(28,15,5,0.45);
+          z-index: 900;
+          opacity: 0; pointer-events: none;
+          transition: opacity 0.25s;
+        }
+        .drawer-overlay.open { opacity: 1; pointer-events: all; }
 
         .pwa-sheet {
           position: absolute; left: 0; right: 0; bottom: 0;
