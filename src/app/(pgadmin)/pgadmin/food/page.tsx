@@ -50,6 +50,15 @@ export default function FoodMenuPage() {
   const [loading, setLoading] = useState(true)
   const [menuMap, setMenuMap] = useState<MenuMap>(new Map())
 
+  // Total active guests count & meals attendance skipping counts state
+  const [activeGuestsCount, setActiveGuestsCount] = useState<number>(0)
+  const [skippedCounts, setSkippedCounts] = useState<Record<string, number>>({
+    breakfast: 0,
+    lunch: 0,
+    dinner: 0,
+    snacks: 0
+  })
+
   // Textarea draft values (local edits before blur)
   const [drafts,   setDrafts]   = useState<Map<string, string>>(new Map())
   // Keys that are currently saving (to show spinner)
@@ -91,6 +100,33 @@ export default function FoodMenuPage() {
       const pg = pgAdmin.pgs as unknown as { id: string; name: string; city: string }
       setPgId(pg.id)
       setPgName(pg.name)
+
+      // Fetch active guests count
+      const { count: guestsCount } = await supabase
+        .from('guests')
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_id', pg.id)
+        .eq('status', 'active')
+      setActiveGuestsCount(guestsCount || 0)
+
+      // Fetch today's skipped meals counts from database
+      const todayStr = new Date().toISOString().split('T')[0]
+      const { data: attendanceData } = await supabase
+        .from('meal_attendance')
+        .select('meal_type')
+        .eq('pg_id', pg.id)
+        .eq('date', todayStr)
+        .eq('eating', false)
+      
+      const counts: Record<string, number> = { breakfast: 0, lunch: 0, dinner: 0, snacks: 0 }
+      if (attendanceData) {
+        attendanceData.forEach((row: any) => {
+          if (row.meal_type in counts) {
+            counts[row.meal_type]++
+          }
+        })
+      }
+      setSkippedCounts(counts)
 
       const { data: rows, error: rowsErr } = await supabase
         .from('food_menu')
@@ -322,7 +358,23 @@ export default function FoodMenuPage() {
                       </div>
                       <div className="meal-header-text">
                         <div className="meal-name">{meal.label}</div>
-                        <div className="meal-time">{meal.timeHint}</div>
+                        <div className="meal-time">
+                          {meal.timeHint}
+                          {selectedDay === todayIdx && (
+                            <span style={{
+                              marginLeft: 8,
+                              fontSize: 10,
+                              fontWeight: 800,
+                              color: skippedCounts[meal.type] > 0 ? '#EF4444' : '#1DB970',
+                              background: skippedCounts[meal.type] > 0 ? '#FEE2E2' : '#E6F9F0',
+                              padding: '1.5px 6px',
+                              borderRadius: 4
+                            }}>
+                              🍽️ {activeGuestsCount - (skippedCounts[meal.type] || 0)}/{activeGuestsCount} eating
+                              {skippedCounts[meal.type] > 0 && ` (${skippedCounts[meal.type]} skipping)`}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Save indicator */}

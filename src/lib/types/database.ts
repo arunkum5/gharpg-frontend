@@ -116,6 +116,8 @@ export interface Guest {
   approved_at:            string | null
   rejection_reason:       string | null
   notes:                  string | null
+  checkout_requested?:    boolean
+  checkout_reason?:       string | null
   created_at:             string
   updated_at:             string
   deleted_at:             string | null
@@ -227,4 +229,15 @@ export interface GuestIssue {
 export interface GuestIssueWithDetails extends GuestIssue {
   guest: Guest
 }
+
+export interface MealAttendance {
+  id: string
+  pg_id: string
+  guest_id: string
+  date: string
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snacks'
+  eating: boolean
+  created_at: string
+}
+
 

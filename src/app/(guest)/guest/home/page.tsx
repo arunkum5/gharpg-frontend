@@ -95,6 +95,16 @@ export default function GuestHome() {
   const [foodMenu, setFoodMenu] = useState<FoodMenu[]>([])
   const [issues, setIssues] = useState<GuestIssue[]>([])
   
+  // Skipped meals state (contains meal types like 'breakfast', 'lunch' that are skipped TODAY)
+  const [skippedMeals, setSkippedMeals] = useState<string[]>([])
+
+  // Checkout request states
+  const [checkoutRequested, setCheckoutRequested] = useState(false)
+  const [checkoutDate, setCheckoutDate] = useState('')
+  const [checkoutReasonText, setCheckoutReasonText] = useState('')
+  const [submittingCheckout, setSubmittingCheckout] = useState(false)
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
+
   // Issue Form state
   const [issueTitle, setIssueTitle] = useState('')
   const [issueDesc, setIssueDesc] = useState('')
@@ -202,6 +212,27 @@ export default function GuestHome() {
           .eq('guest_id', guestData.id)
           .order('created_at', { ascending: false })
         if (issuesData) setIssues(issuesData as GuestIssue[])
+
+        // Fetch today's skipped meals
+        const todayStr = new Date().toISOString().split('T')[0]
+        const { data: skippedData } = await supabase
+          .from('meal_attendance')
+          .select('meal_type')
+          .eq('guest_id', guestData.id)
+          .eq('date', todayStr)
+          .eq('eating', false)
+        if (skippedData) {
+          setSkippedMeals(skippedData.map(d => d.meal_type))
+        }
+
+        // Set checkout status from guest DB values
+        setCheckoutRequested(!!guestData.checkout_requested)
+        if (guestData.expected_checkout_date) {
+          setCheckoutDate(guestData.expected_checkout_date)
+        }
+        if (guestData.checkout_reason) {
+          setCheckoutReasonText(guestData.checkout_reason)
+        }
       }
     } catch (e) {
       console.error('Error fetching guest data:', e)
@@ -303,6 +334,73 @@ export default function GuestHome() {
       toast.error(err.message || 'Failed to report issue')
     } finally {
       setSubmittingIssue(false)
+    }
+  }
+
+  async function toggleMealAttendance(mealType: string) {
+    if (!guest || !pg) return
+    const isSkipped = skippedMeals.includes(mealType)
+    const todayStr = new Date().toISOString().split('T')[0]
+    
+    // Toggle skipped state locally
+    const updatedSkipped = isSkipped 
+      ? skippedMeals.filter(m => m !== mealType)
+      : [...skippedMeals, mealType]
+    
+    setSkippedMeals(updatedSkipped)
+
+    try {
+      const { error } = await supabase
+        .from('meal_attendance')
+        .upsert({
+          pg_id: pg.id,
+          guest_id: guest.id,
+          date: todayStr,
+          meal_type: mealType,
+          eating: isSkipped // if was skipped, now eating (true). if eating, now skipping (false).
+        }, {
+          onConflict: 'guest_id,date,meal_type'
+        })
+
+      if (error) throw error
+      toast.success(isSkipped ? `Opted in for ${mealType} today!` : `Opted out of ${mealType} today.`)
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Failed to update meal attendance status')
+      // Revert local state
+      setSkippedMeals(skippedMeals)
+    }
+  }
+
+  async function handleCheckoutRequest(e: React.FormEvent) {
+    e.preventDefault()
+    if (!guest || !pg) return
+    if (!checkoutDate) {
+      toast.error('Please specify a checkout date')
+      return
+    }
+
+    setSubmittingCheckout(true)
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .update({
+          checkout_requested: true,
+          expected_checkout_date: checkoutDate,
+          checkout_reason: checkoutReasonText.trim()
+        })
+        .eq('id', guest.id)
+
+      if (error) throw error
+
+      toast.success('Your checkout/move-out request has been submitted!')
+      setCheckoutRequested(true)
+      setIsCheckoutModalOpen(false)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || 'Failed to submit checkout request')
+    } finally {
+      setSubmittingCheckout(false)
     }
   }
 
@@ -769,19 +867,39 @@ export default function GuestHome() {
                           <div style={{ fontSize: 12, color: 'var(--text-soft)', marginTop: 4 }}>Check back later for today&apos;s meals</div>
                         </div>
                       ) : (
-                        todayMeals.map(meal => (
-                          <div key={meal.id} className="meal-card">
-                            <div className="meal-card-hd">
-                              <span>{MEAL_ICONS[meal.meal_type] ?? '🍴'}</span>
-                              <span style={{ textTransform: 'capitalize' }}>{meal.meal_type}</span>
+                        todayMeals.map(meal => {
+                          const isSkipped = skippedMeals.includes(meal.meal_type)
+                          return (
+                            <div key={meal.id} className="meal-card" style={{ opacity: isSkipped ? 0.65 : 1, transition: 'opacity 0.2s' }}>
+                              <div className="meal-card-hd" style={{ justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <span>{MEAL_ICONS[meal.meal_type] ?? '🍴'}</span>
+                                  <span style={{ textTransform: 'capitalize' }}>{meal.meal_type}</span>
+                                </div>
+                                <button
+                                  onClick={() => toggleMealAttendance(meal.meal_type)}
+                                  style={{
+                                    border: 'none',
+                                    borderRadius: 8,
+                                    padding: '4px 8px',
+                                    fontSize: 11,
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    background: isSkipped ? 'var(--orange-pale)' : '#FEE2E2',
+                                    color: isSkipped ? 'var(--orange)' : '#EF4444'
+                                  }}
+                                >
+                                  {isSkipped ? '➕ Opt In' : '✕ Skipping'}
+                                </button>
+                              </div>
+                              <div className="meal-chips">
+                                {meal.items.split(',').map(item => item.trim()).filter(Boolean).map((item, idx) => (
+                                  <span key={idx} className="meal-chip" style={{ textDecoration: isSkipped ? 'line-through' : 'none' }}>{item}</span>
+                                ))}
+                              </div>
                             </div>
-                            <div className="meal-chips">
-                              {meal.items.split(',').map(item => item.trim()).filter(Boolean).map((item, idx) => (
-                                <span key={idx} className="meal-chip">{item}</span>
-                              ))}
-                            </div>
-                          </div>
-                        ))
+                          )
+                        })
                       )}
                     </div>
 
@@ -1006,9 +1124,12 @@ export default function GuestHome() {
                 </div>
 
                 <div className="prof-section">
-                  <div className="ps-item">
-                    <div className="ps-ic" style={{ background: 'var(--red-pale)' }}>🔔</div>
-                    <div className="ps-label">Notifications</div>
+                  <div className="ps-item" onClick={() => setIsCheckoutModalOpen(true)}>
+                    <div className="ps-ic" style={{ background: '#FEE2E2' }}>🚪</div>
+                    <div className="ps-label">Leave PG / Request Checkout</div>
+                    <div className="ps-val" style={{ color: checkoutRequested ? 'var(--orange)' : 'var(--text-soft)' }}>
+                      {checkoutRequested ? 'Requested' : 'Active Resident'}
+                    </div>
                     <div className="ps-arrow">›</div>
                   </div>
                   <div className="ps-item" onClick={() => setIsChangePinOpen(true)}>
@@ -1041,7 +1162,7 @@ export default function GuestHome() {
         {isChangePinOpen && (
           <div className="drawer-overlay open" onClick={() => setIsChangePinOpen(false)} style={{ zIndex: 999 }}></div>
         )}
-        <div className={`pwa-sheet ${isChangePinOpen ? 'open' : ''}`}>
+        <div className={`pwa-sheet ${isChangePinOpen ? 'open' : ''}`} style={{ zIndex: 1000 }}>
           <div className="sheet-hd">
             <div className="sheet-title">🔑 Update Login PIN</div>
             <div className="sheet-close" onClick={() => setIsChangePinOpen(false)}>✕</div>
@@ -1081,6 +1202,59 @@ export default function GuestHome() {
               {updatingPin ? 'Updating PIN...' : 'Save New PIN'}
             </button>
           </form>
+        </div>
+
+        {/* CHECKOUT REQUEST DRAWER */}
+        {isCheckoutModalOpen && (
+          <div className="drawer-overlay open" onClick={() => setIsCheckoutModalOpen(false)} style={{ zIndex: 999 }}></div>
+        )}
+        <div className={`pwa-sheet ${isCheckoutModalOpen ? 'open' : ''}`} style={{ zIndex: 1000 }}>
+          <div className="sheet-hd">
+            <div className="sheet-title">🚪 Request Checkout / Leave PG</div>
+            <div className="sheet-close" onClick={() => setIsCheckoutModalOpen(false)}>✕</div>
+          </div>
+          {checkoutRequested ? (
+            <div className="sheet-body" style={{ textAlign: 'center', padding: '10px 0' }}>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>⏳</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Checkout Request Pending</div>
+              <div style={{ fontSize: 12, color: 'var(--text-soft)', marginTop: 6, lineHeight: 1.4 }}>
+                You have already requested a checkout on <strong style={{ color: 'var(--orange)' }}>{checkoutDate}</strong>.<br/>
+                Your PG Admin is reviewing your request.
+              </div>
+            </div>
+          ) : (
+            <form className="sheet-body" onSubmit={handleCheckoutRequest}>
+              <p style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14, lineHeight: 1.4 }}>
+                Submit a move-out request. Your PG Admin will be notified to settle details and approve checkout.
+              </p>
+              <div className="field">
+                <label>Expected Checkout Date *</label>
+                <input
+                  type="date"
+                  value={checkoutDate}
+                  onChange={e => setCheckoutDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="field" style={{ marginTop: 10 }}>
+                <label>Reason / Comments (optional)</label>
+                <textarea
+                  placeholder="e.g. Completed my college course / Job transfer..."
+                  value={checkoutReasonText}
+                  onChange={e => setCheckoutReasonText(e.target.value)}
+                  style={{ height: 60 }}
+                />
+              </div>
+              <button 
+                type="submit" 
+                className="sheet-btn" 
+                disabled={submittingCheckout}
+                style={{ marginTop: 16, background: 'var(--red)' }}
+              >
+                {submittingCheckout ? 'Submitting...' : 'Submit Checkout Request'}
+              </button>
+            </form>
+          )}
         </div>
 
       </div>{/* /phone */}

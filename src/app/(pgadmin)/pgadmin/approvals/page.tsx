@@ -27,7 +27,7 @@ export default function ApprovalsPage() {
   const [loading, setLoading] = useState(true)
 
   // Filtering states
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'checkout_requests'>('pending')
   const [searchQuery, setSearchQuery] = useState('')
 
   // Detail panel states
@@ -181,18 +181,62 @@ export default function ApprovalsPage() {
     }
   }
 
+  async function handleApproveCheckout(guest: RequestGuest) {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .update({
+          status: 'checked_out',
+          checkout_requested: false,
+          actual_checkout_date: guest.expected_checkout_date || new Date().toISOString().split('T')[0]
+        })
+        .eq('id', guest.id)
+
+      if (error) throw error
+
+      // Decrease occupancy of allocated room
+      if (guest.room_id) {
+        const { data: roomData } = await supabase
+          .from('rooms')
+          .select('current_occupancy, capacity')
+          .eq('id', guest.room_id)
+          .single()
+        
+        if (roomData) {
+          const newOcc = Math.max(0, roomData.current_occupancy - 1)
+          await supabase
+            .from('rooms')
+            .update({
+              current_occupancy: newOcc,
+              status: newOcc === 0 ? 'free' : 'partial'
+            })
+            .eq('id', guest.room_id)
+        }
+      }
+
+      toast.success(`Checkout approved for ${guest.first_name}!`)
+      setSelectedReq(null)
+      await fetchData()
+    } catch (e: any) {
+      console.error(e)
+      toast.error('Error approving checkout request')
+    }
+  }
+
   // Count states
   const totalCount = requests.length
   const pendingCount = requests.filter(r => r.approval_status === 'pending').length
   const approvedCount = requests.filter(r => r.approval_status === 'approved').length
   const rejectedCount = requests.filter(r => r.approval_status === 'rejected').length
+  const checkoutRequestsCount = requests.filter(r => r.checkout_requested).length
 
   // Filter requests list
   const filteredRequests = requests
     .filter(r => {
-      if (activeTab === 'pending') return r.approval_status === 'pending'
-      if (activeTab === 'approved') return r.approval_status === 'approved'
+      if (activeTab === 'pending') return r.approval_status === 'pending' && !r.checkout_requested
+      if (activeTab === 'approved') return r.approval_status === 'approved' && !r.checkout_requested
       if (activeTab === 'rejected') return r.approval_status === 'rejected'
+      if (activeTab === 'checkout_requests') return !!r.checkout_requested
       return true
     })
     .filter(r => {
@@ -219,10 +263,11 @@ export default function ApprovalsPage() {
 
       <div className="content">
         {/* STAT STRIP */}
-        <div className="stat-strip">
+        <div className="stat-strip" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
           {[
             { id: 'all', icon: '📋', val: totalCount, label: 'Total Requests', color: 'var(--orange-pale)' },
             { id: 'pending', icon: '⏳', val: pendingCount, label: 'Pending', color: 'var(--amber-pale)' },
+            { id: 'checkout_requests', icon: '🚪', val: checkoutRequestsCount, label: 'Checkout Requests', color: '#FEE2E2' },
             { id: 'approved', icon: '✅', val: approvedCount, label: 'Approved', color: 'var(--green-pale)' },
             { id: 'rejected', icon: '❌', val: rejectedCount, label: 'Rejected', color: 'var(--red-pale)' }
           ].map(s => (
@@ -301,7 +346,9 @@ export default function ApprovalsPage() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <div className="ac-status">
-                              {r.approval_status === 'approved'
+                              {r.checkout_requested
+                                ? '🚪 Checkout Req'
+                                : r.approval_status === 'approved'
                                 ? '🟢 Approved'
                                 : r.approval_status === 'rejected'
                                 ? '🔴 Rejected'
@@ -309,7 +356,14 @@ export default function ApprovalsPage() {
                             </div>
                           </div>
                         </div>
-                        {r.approval_status === 'pending' && (
+                        {r.checkout_requested && (
+                          <div className="ac-actions" onClick={e => e.stopPropagation()}>
+                            <button className="btn-approve" onClick={() => handleApproveCheckout(r)} style={{ background: '#FEE2E2', color: '#EF4444', borderColor: '#FCA5A5' }}>
+                              🚪 Approve Checkout
+                            </button>
+                          </div>
+                        )}
+                        {r.approval_status === 'pending' && !r.checkout_requested && (
                           <div className="ac-actions" onClick={e => e.stopPropagation()}>
                             <button className="btn-approve" onClick={() => handleApprove(r)}>
                               ✓ &nbsp;Approve
@@ -369,7 +423,34 @@ export default function ApprovalsPage() {
                     </div>
                   </div>
 
-                  {selectedReq.approval_status === 'pending' && (
+                  {selectedReq.checkout_requested && (
+                    <div className="dp-card">
+                      <div className="dp-card-hd">
+                        <div className="dp-card-title">🚪 Checkout Details</div>
+                      </div>
+                      <div className="dp-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div className="detail-rows">
+                          <div className="dr">
+                            <span className="dr-key">Requested Date</span>
+                            <span className="dr-val" style={{ color: 'var(--red)' }}>{selectedReq.expected_checkout_date || 'N/A'}</span>
+                          </div>
+                          <div className="dr">
+                            <span className="dr-key">Reason</span>
+                            <span className="dr-val">{selectedReq.checkout_reason || 'No reason provided'}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="panel-approve"
+                          onClick={() => handleApproveCheckout(selectedReq)}
+                          style={{ background: 'var(--red)', marginTop: 8 }}
+                        >
+                          🚪 Approve Checkout / Settle Dues
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedReq.approval_status === 'pending' && !selectedReq.checkout_requested && (
                     <>
                       <div className="dp-card">
                         <div className="dp-card-hd">
