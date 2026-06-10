@@ -126,12 +126,31 @@ export default function RegisterPG() {
       if (!address.trim()) { toast.error('Full Address is required'); return false }
       if (!city.trim()) { toast.error('City is required'); return false }
       if (!state.trim()) { toast.error('State is required'); return false }
+      
+      const phoneRegex = /^\d{10}$/
       if (!contactPhone.trim()) { toast.error('PG Contact Number is required'); return false }
+      if (!phoneRegex.test(contactPhone.trim())) { toast.error('PG Contact Number must be exactly 10 digits'); return false }
+      
+      if (contactEmail.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(contactEmail.trim())) { toast.error('Please enter a valid PG Email'); return false }
+      }
+      
+      if (pinCode.trim()) {
+        const pinRegex = /^\d{6}$/
+        if (!pinRegex.test(pinCode.trim())) { toast.error('PIN Code must be exactly 6 digits'); return false }
+      }
     } else if (step === 3) {
       if (adminMode === 'invite') {
         if (!inviteAdminName.trim()) { toast.error('Admin Name is required'); return false }
         if (!inviteAdminMobile.trim()) { toast.error('Mobile Number is required'); return false }
+        
+        const phoneRegex = /^\d{10}$/
+        if (!phoneRegex.test(inviteAdminMobile.trim())) { toast.error('Admin Mobile Number must be exactly 10 digits'); return false }
+        
         if (!inviteAdminEmail.trim()) { toast.error('Email Address is required'); return false }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(inviteAdminEmail.trim())) { toast.error('Please enter a valid Admin Email address'); return false }
       } else {
         if (!selectedAdminId) { toast.error('Please select an existing admin'); return false }
       }
@@ -166,7 +185,7 @@ export default function RegisterPG() {
   }
 
   async function handlePublish() {
-    if (!superadminId) return
+    if (!superadminId || isSubmitting || isPublished) return
     setIsSubmitting(true)
 
     const pgData = {
@@ -203,8 +222,11 @@ export default function RegisterPG() {
       const res = await registerPGAction(pgData, adminData)
       if (res.success) {
         setRegisteredPgId(res.pgId || null)
-        toast.success('PG property registered successfully!')
+        toast.success('PG property registered successfully! Redirecting...')
         setIsPublished(true)
+        setTimeout(() => {
+          router.push('/superadmin/dashboard')
+        }, 1500)
       } else {
         toast.error(res.error || 'Failed to register PG')
       }
@@ -237,7 +259,7 @@ export default function RegisterPG() {
               className="tb-btn"
               style={{ background: '#1DB970' }}
               onClick={handlePublish}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isPublished}
             >
               {isSubmitting ? 'Publishing...' : '🚀 Publish PG'}
             </button>
@@ -845,7 +867,7 @@ export default function RegisterPG() {
                       className="btn-next"
                       style={{ background: 'var(--green)', padding: '11px 28px' }}
                       onClick={handlePublish}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isPublished}
                     >
                       {isSubmitting ? 'Publishing...' : '🚀 Publish PG'}
                     </button>
@@ -915,6 +937,13 @@ export default function RegisterPG() {
           background: var(--orange-hover);
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(244,112,10,0.3);
+        }
+        .tb-btn:disabled, .btn-next:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          pointer-events: none;
+          box-shadow: none !important;
+          transform: none !important;
         }
 
         .content {
