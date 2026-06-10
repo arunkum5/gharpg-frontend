@@ -7,15 +7,10 @@ export default async function SuperAdminDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch all PGs with stats
+  // Fetch all PGs
   const { data: pgs } = await supabase
     .from('pgs')
-    .select(`
-      id, name, city, type, is_active,
-      floors(count),
-      rooms(count, status),
-      guests(count, status)
-    `)
+    .select('id, name, city, type, is_active')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
