@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { deletePGAction } from './actions'
 
 interface PG {
   id: string
@@ -122,20 +123,17 @@ export default function SuperAdminPgs() {
   async function handleDeletePg(pgId: string, pgName: string) {
     if (!confirm(`Are you sure you want to delete "${pgName}"? This will hide it from the platform.`)) return
     try {
-      const { error } = await supabase
-        .from('pgs')
-        .update({
-          deleted_at: new Date().toISOString()
-        })
-        .eq('id', pgId)
+      const res = await deletePGAction(pgId)
 
-      if (error) throw error
+      if (!res.success) {
+        throw new Error(res.error)
+      }
 
       toast.success(`"${pgName}" has been deleted`)
       setPgs(prev => prev.filter(pg => pg.id !== pgId))
     } catch (e: any) {
       console.error(e)
-      toast.error('Failed to delete PG property')
+      toast.error(e.message || 'Failed to delete PG property')
     }
   }
 
