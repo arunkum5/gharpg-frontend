@@ -208,3 +208,23 @@ export interface PGWithStats extends PG {
   pending_approvals: number
   occupancy_pct:    number
 }
+
+export type IssueCategory = 'plumbing' | 'electrical' | 'cleanliness' | 'wifi' | 'furniture' | 'other'
+export type IssueStatus = 'open' | 'in_progress' | 'resolved'
+
+export interface GuestIssue {
+  id: string
+  pg_id: string
+  guest_id: string
+  title: string
+  description: string
+  category: IssueCategory
+  status: IssueStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface GuestIssueWithDetails extends GuestIssue {
+  guest: Guest
+}
+

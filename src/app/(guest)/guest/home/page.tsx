@@ -65,12 +65,21 @@ interface FoodMenu {
   is_active: boolean
 }
 
+interface GuestIssue {
+  id: string
+  title: string
+  description: string
+  category: string
+  status: string
+  created_at: string
+}
+
 export default function GuestHome() {
   const router = useRouter()
   const supabase = createClient()
 
   // Navigation
-  const [activeScreen, setActiveScreen] = useState<'home' | 'room' | 'refer' | 'profile' | 'food'>('home')
+  const [activeScreen, setActiveScreen] = useState<'home' | 'room' | 'refer' | 'profile' | 'food' | 'issues'>('home')
 
   // Loading & Data states
   const [loading, setLoading] = useState(true)
@@ -84,7 +93,14 @@ export default function GuestHome() {
   const [documents, setDocuments] = useState<GuestDoc[]>([])
   const [emergencyContact, setEmergencyContact] = useState<EmergencyContact | null>(null)
   const [foodMenu, setFoodMenu] = useState<FoodMenu[]>([])
+  const [issues, setIssues] = useState<GuestIssue[]>([])
   
+  // Issue Form state
+  const [issueTitle, setIssueTitle] = useState('')
+  const [issueDesc, setIssueDesc] = useState('')
+  const [issueCategory, setIssueCategory] = useState<'plumbing' | 'electrical' | 'cleanliness' | 'wifi' | 'furniture' | 'other'>('other')
+  const [submittingIssue, setSubmittingIssue] = useState(false)
+
   // Is showing demo profile warning
   const [isDemoMode, setIsDemoMode] = useState(false)
 
@@ -178,6 +194,14 @@ export default function GuestHome() {
           .eq('pg_id', guestData.pg_id)
           .eq('is_active', true)
         if (foodData) setFoodMenu(foodData as FoodMenu[])
+
+        // Fetch guest issues
+        const { data: issuesData } = await supabase
+          .from('guest_issues')
+          .select('*')
+          .eq('guest_id', guestData.id)
+          .order('created_at', { ascending: false })
+        if (issuesData) setIssues(issuesData as GuestIssue[])
       }
     } catch (e) {
       console.error('Error fetching guest data:', e)
@@ -235,6 +259,50 @@ export default function GuestHome() {
       toast.error(err.message || 'Failed to submit referral')
     } finally {
       setSubmittingReferral(false)
+    }
+  }
+
+  async function handleSubmitIssue(e: React.FormEvent) {
+    e.preventDefault()
+    if (!guest || !pg) return
+    if (!issueTitle.trim() || !issueDesc.trim()) {
+      toast.error('Please enter a title and description for the issue')
+      return
+    }
+
+    setSubmittingIssue(true)
+    try {
+      const { data, error } = await supabase
+        .from('guest_issues')
+        .insert({
+          pg_id: pg.id,
+          guest_id: guest.id,
+          title: issueTitle.trim(),
+          description: issueDesc.trim(),
+          category: issueCategory,
+          status: 'open'
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      toast.success('Complaint/Issue reported successfully!')
+      setIssueTitle('')
+      setIssueDesc('')
+      setIssueCategory('other')
+      
+      // Update local issues state
+      if (data) {
+        setIssues(prev => [data as GuestIssue, ...prev])
+      }
+      
+      setActiveScreen('issues')
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || 'Failed to report issue')
+    } finally {
+      setSubmittingIssue(false)
     }
   }
 
@@ -379,6 +447,10 @@ export default function GuestHome() {
                     <div className="qa-item" onClick={() => setActiveScreen('food')}>
                       <div className="qa-icon" style={{ background: 'var(--amber-pale)' }}>🍱</div>
                       <div className="qa-label">Food Menu</div>
+                    </div>
+                    <div className="qa-item" onClick={() => setActiveScreen('issues')}>
+                      <div className="qa-icon" style={{ background: '#FEE2E2' }}>⚠️</div>
+                      <div className="qa-label">Report Issue</div>
                     </div>
                     <div className="qa-item" onClick={() => setActiveScreen('profile')}>
                       <div className="qa-icon" style={{ background: '#EFF6FF' }}>📄</div>
@@ -747,6 +819,134 @@ export default function GuestHome() {
               </div>
             )
           })()}
+
+          {/* ═══════════ ISSUES SCREEN ═══════════ */}
+          <div className={`screen ${activeScreen === 'issues' ? 'active' : ''}`}>
+            <div className="food-hd" style={{ background: 'linear-gradient(160deg, #1C0F05, #450A0A)' }}>
+              <div className="rs-hd-top">
+                <div className="rs-back" onClick={() => setActiveScreen('home')}>←</div>
+                <div className="rs-hd-title">Report Issue</div>
+              </div>
+              <div style={{ marginTop: 4, fontSize: 12, color: '#FECACA' }}>
+                Need help? Submit complaints directly to your PG Admin.
+              </div>
+            </div>
+            <div className="screen-scroll">
+              <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                
+                {/* REPORT NEW ISSUE FORM */}
+                <div style={{ background: 'var(--white)', borderRadius: 14, border: '1px solid var(--border)', padding: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', marginBottom: 12 }}>✍️ Submit a Complaint</div>
+                  <form onSubmit={handleSubmitIssue} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div className="field">
+                      <label>Category</label>
+                      <select 
+                        value={issueCategory} 
+                        onChange={e => setIssueCategory(e.target.value as any)}
+                        style={{ width: '100%' }}
+                      >
+                        <option value="plumbing">🚰 Plumbing (Water leak, tap issue)</option>
+                        <option value="electrical">🔌 Electrical (Fan, light, geyser)</option>
+                        <option value="cleanliness">🧹 Cleanliness (Room/Floor not clean)</option>
+                        <option value="wifi">📶 WiFi / Internet</option>
+                        <option value="furniture">🛏️ Furniture / Room items</option>
+                        <option value="other">❓ Other / Food Issues</option>
+                      </select>
+                    </div>
+
+                    <div className="field">
+                      <label>Title / Summary</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Fan in Room 104 not working" 
+                        value={issueTitle}
+                        onChange={e => setIssueTitle(e.target.value)}
+                        required
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label>Detailed Description</label>
+                      <textarea 
+                        placeholder="Please describe the issue in detail so the admin can fix it..." 
+                        value={issueDesc}
+                        onChange={e => setIssueDesc(e.target.value)}
+                        required
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="submit-btn" 
+                      disabled={submittingIssue}
+                      style={{ marginTop: 6 }}
+                    >
+                      {submittingIssue ? 'Submitting...' : 'Submit Issue'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* MY PAST ISSUES */}
+                <div>
+                  <div className="sec-hd">
+                    <div className="sec-title">⏳ My Reported Issues ({issues.length})</div>
+                  </div>
+                  {issues.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '24px 16px', background: 'var(--white)', borderRadius: 14, border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>No active issues reported</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-soft)', marginTop: 4 }}>Everything looks good!</div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {issues.map(issue => {
+                        const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+                          open: { bg: '#FEE2E2', text: '#EF4444', label: 'Open' },
+                          in_progress: { bg: '#FEF3C7', text: '#D97706', label: 'In Progress' },
+                          resolved: { bg: '#D1FAE5', text: '#059669', label: 'Resolved' }
+                        }
+                        const st = statusColors[issue.status] || { bg: '#F3F4F6', text: '#4B5563', label: issue.status }
+                        const catEmojis: Record<string, string> = {
+                          plumbing: '🚰',
+                          electrical: '🔌',
+                          cleanliness: '🧹',
+                          wifi: '📶',
+                          furniture: '🛏️',
+                          other: '❓'
+                        }
+                        return (
+                          <div key={issue.id} style={{ background: 'var(--white)', borderRadius: 12, border: '1px solid var(--border)', padding: '14px 16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-soft)', background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
+                                {catEmojis[issue.category] || '⚠️'} {issue.category}
+                              </span>
+                              <span style={{ fontSize: 11, fontWeight: 800, background: st.bg, color: st.text, padding: '3px 8px', borderRadius: 20 }}>
+                                {st.label}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 4 }}>{issue.title}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.4 }}>{issue.description}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-soft)', marginTop: 8 }}>
+                              Reported on {new Date(issue.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+            <div className="bottom-nav">
+              <div className="bn-item active" onClick={() => setActiveScreen('home')}><div className="bn-icon">🏠</div><div className="bn-label">Home</div></div>
+              <div className="bn-item" onClick={() => setActiveScreen('room')}><div className="bn-icon">🛏️</div><div className="bn-label">My Room</div></div>
+              <div className="bn-item" onClick={() => setActiveScreen('refer')}><div className="bn-icon">🔗</div><div className="bn-label">Refer</div></div>
+              <div className="bn-item" onClick={() => setActiveScreen('profile')}><div className="bn-icon">👤</div><div className="bn-label">Profile</div></div>
+            </div>
+          </div>
 
           {/* ═══════════ PROFILE SCREEN ═══════════ */}
           <div className={`screen ${activeScreen === 'profile' ? 'active' : ''}`}>

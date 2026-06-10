@@ -36,9 +36,9 @@ const PGADMIN_NAV: NavItem[] = [
   { icon: '👥', label: 'Guests',       href: '/pgadmin/guests' },
   { icon: '✅', label: 'Approvals',    href: '/pgadmin/approvals' },
   { icon: '🍱', label: 'Food Menu',    href: '/pgadmin/food' },
+  { icon: '⚠️', label: 'Guest Issues',  href: '/pgadmin/reports' },
   { icon: '💰', label: 'Payments',     href: '/pgadmin/payments' },
   { icon: '🔔', label: 'Notices',      href: '/pgadmin/notices' },
-  { icon: '📋', label: 'Reports',      href: '/pgadmin/reports' },
   { icon: '⚙️', label: 'PG Settings', href: '/pgadmin/settings' },
 ]
 
