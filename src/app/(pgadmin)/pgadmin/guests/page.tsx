@@ -24,6 +24,7 @@ interface GuestWithRoom {
   stay_duration_months: number | null
   notes: string | null
   created_at: string
+  email: string | null
   rooms: {
     id: string
     room_number: string
@@ -85,12 +86,13 @@ export default function GuestList() {
       setPgId(pg.id)
       setPgName(pg.name)
 
-      // Fetch guests
+      // Fetch guests with profile email via join
       const { data: guestsData, error: guestsErr } = await supabase
         .from('guests')
         .select(`
           id, user_id, first_name, last_name, gender, dob, photo_url, purpose, checkin_date, status, approval_status, monthly_rent, stay_duration_months, notes, created_at,
-          rooms(id, room_number, floors(floor_name))
+          rooms(id, room_number, floors(floor_name)),
+          profiles(email)
         `)
         .eq('pg_id', pg.id)
 
@@ -98,6 +100,7 @@ export default function GuestList() {
 
       const mappedGuests = (guestsData || []).map((g: any) => ({
         ...g,
+        email: (g.profiles as any)?.email || null,
         rooms: g.rooms ? {
           id: g.rooms.id,
           room_number: g.rooms.room_number,
@@ -371,6 +374,9 @@ export default function GuestList() {
                               <div className="g-name">
                                 {g.first_name} {g.last_name}
                               </div>
+                              {g.email && (
+                                <div className="g-email">{g.email}</div>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -504,6 +510,12 @@ export default function GuestList() {
               <div className="dr-section">
                 <div className="drs-title">📋 Stay Details</div>
                 <div className="detail-rows">
+                  {drawerGuest.email && (
+                    <div className="drow">
+                      <span className="dk">Login Email</span>
+                      <span className="dv" style={{ color: 'var(--orange)', fontSize: 12 }}>{drawerGuest.email}</span>
+                    </div>
+                  )}
                   <div className="drow">
                     <span className="dk">Purpose</span>
                     <span className="dv">
@@ -621,6 +633,7 @@ export default function GuestList() {
         .g-cell { display: flex; align-items: center; gap: 10px; }
         .g-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
         .g-name { font-weight: 700; font-size: 13px; }
+        .g-email { font-size: 11px; color: var(--text-soft); margin-top: 1px; }
 
         .room-chip { background: var(--orange-pale); color: var(--orange); border-radius: 6px; padding: 3px 9px; font-size: 11.5px; font-weight: 800; display: inline-block; }
         .badge { border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 800; display: inline-block; }
