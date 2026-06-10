@@ -173,9 +173,17 @@ export default function RegisterPG() {
   }
 
   function goToStep(n: number) {
-    if (n <= currentStep || validateStep(n - 1)) {
+    if (n <= currentStep) {
       setCurrentStep(n)
+      return
     }
+    // Enforce validation of all steps from currentStep up to n - 1
+    for (let step = currentStep; step < n; step++) {
+      if (!validateStep(step)) {
+        return
+      }
+    }
+    setCurrentStep(n)
   }
 
   function toggleAmenity(label: string) {
