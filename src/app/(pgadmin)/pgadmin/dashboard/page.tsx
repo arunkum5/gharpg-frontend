@@ -16,7 +16,7 @@ export default async function PGAdminDashboard() {
     .single()
 
   if (!pgAdmin) redirect('/login')
-  const pg     = pgAdmin.pgs as { id: string; name: string; city: string }
+  const pg     = pgAdmin.pgs as unknown as { id: string; name: string; city: string }
   const pgId   = pg.id
 
   // Fetch stats in parallel
@@ -40,8 +40,8 @@ export default async function PGAdminDashboard() {
   // Group rooms by floor → row
   const floorMap = new Map<string, { name: string; rows: Map<string, { name: string; rooms: typeof rooms }> }>()
   rooms?.forEach(room => {
-    const floor = room.floors as { floor_name: string } | null
-    const row   = room.rows   as { row_name:   string } | null
+    const floor = room.floors as unknown as { floor_name: string } | null
+    const row   = room.rows   as unknown as { row_name:   string } | null
     const fName = floor?.floor_name || 'Floor'
     const rName = row?.row_name     || 'Row'
     if (!floorMap.has(room.floor_id)) floorMap.set(room.floor_id, { name: fName, rows: new Map() })
@@ -161,7 +161,7 @@ export default async function PGAdminDashboard() {
                 </div>
               )}
               {recentGuests?.filter(g => g.approval_status === 'pending').map(g => {
-                const room = g.rooms as { room_number: string } | null
+                const room = g.rooms as unknown as { room_number: string } | null
                 const initials = `${g.first_name[0]}${g.last_name[0]}`.toUpperCase()
                 return (
                   <div key={g.id} className="flex items-center gap-2.5 p-2.5 rounded-[11px] transition-all cursor-pointer"
@@ -208,7 +208,7 @@ export default async function PGAdminDashboard() {
                 <tr><td colSpan={5} className="py-10 text-center" style={{ color: '#A89080', fontSize: 13 }}>No guests yet. <a href="/pgadmin/guests/add" style={{ color: '#F4700A', fontWeight: 700 }}>Add first guest →</a></td></tr>
               )}
               {recentGuests?.map((g, idx) => {
-                const room    = g.rooms as { room_number: string } | null
+                const room    = g.rooms as unknown as { room_number: string } | null
                 const initials = `${g.first_name[0]}${g.last_name[0]}`.toUpperCase()
                 const colors   = ['linear-gradient(135deg,#F4700A,#FFAA60)', 'linear-gradient(135deg,#1DB970,#5DE89A)', 'linear-gradient(135deg,#7C3AED,#A78BFA)', 'linear-gradient(135deg,#2563EB,#60A5FA)', 'linear-gradient(135deg,#E53935,#FF7B7B)']
                 return (

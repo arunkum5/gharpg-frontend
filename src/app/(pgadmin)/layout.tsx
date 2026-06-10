@@ -24,7 +24,7 @@ export default async function PGAdminLayout({ children }: { children: React.Reac
     .eq('is_active', true)
     .single()
 
-  const pgName = (pgAdmin?.pgs as { name: string } | null)?.name || 'My PG'
+  const pgName = (pgAdmin?.pgs as unknown as { name: string } | null)?.name || 'My PG'
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#FAF6F2' }}>
