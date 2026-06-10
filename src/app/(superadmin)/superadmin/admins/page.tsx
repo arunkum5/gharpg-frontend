@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
+import { resetUserPasswordAction } from '@/app/actions/auth'
 
 interface PGAdminProfile {
   id: string
@@ -169,6 +170,19 @@ export default function SuperAdminAdmins() {
     }
   }
 
+  // Reset login PIN
+  async function handleResetPin(userId: string, name: string) {
+    if (!confirm(`Are you sure you want to reset the login PIN for ${name} to "123456"?`)) return
+    try {
+      const res = await resetUserPasswordAction(userId)
+      if (!res.success) throw new Error(res.error || 'Failed to reset PIN')
+      toast.success(`PIN for ${name} has been reset to "123456"!`)
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e.message || 'Failed to reset PIN')
+    }
+  }
+
   // Filter admins
   const filteredAdmins = admins.filter(admin => {
     const activePg = admin.pg_admins.find(pa => pa.is_active)?.pgs
@@ -263,6 +277,12 @@ export default function SuperAdminAdmins() {
                       </td>
                       <td>
                         <div className="actions-cell">
+                          <button 
+                            className="action-btn text-orange"
+                            onClick={() => handleResetPin(admin.id, admin.name)}
+                          >
+                            Reset PIN 🔑
+                          </button>
                           <button 
                             className="action-btn text-orange"
                             onClick={() => openEditModal(admin)}

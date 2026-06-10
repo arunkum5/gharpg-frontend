@@ -7,6 +7,7 @@ import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Room, Floor } from '@/lib/types/database'
+import { createGuestAuthAction } from '@/app/actions/auth'
 
 interface MappedRoom extends Room {
   floor_name: string
@@ -113,8 +114,8 @@ export default function AddGuest() {
 
   // Handle form submission
   async function handleSubmit() {
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim()) {
-      toast.error('Please fill in Name and Mobile Number')
+    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim()) {
+      toast.error('Please fill in Name, Mobile Number, and Email')
       return
     }
     if (!selectedRoomId) {
@@ -130,12 +131,24 @@ export default function AddGuest() {
       const room = rooms.find(r => r.id === selectedRoomId)
       if (!room) throw new Error('Selected room not found')
 
+      // Provision Auth user account with default PIN 123456
+      const authRes = await createGuestAuthAction(
+        email.trim(),
+        firstName.trim() + ' ' + lastName.trim(),
+        mobile.trim()
+      )
+      if (!authRes.success) {
+        throw new Error(authRes.error || 'Failed to create guest user account')
+      }
+      const guestUserId = authRes.userId
+
       // 1. Insert Guest
       const { data: guestData, error: guestErr } = await supabase
         .from('guests')
         .insert({
           pg_id: pgId,
           room_id: selectedRoomId,
+          user_id: guestUserId,
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           gender,

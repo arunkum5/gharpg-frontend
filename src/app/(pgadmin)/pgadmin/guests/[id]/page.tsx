@@ -7,6 +7,7 @@ import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Guest, Room, GuestDocument, EmergencyContact } from '@/lib/types/database'
+import { resetUserPasswordAction } from '@/app/actions/auth'
 
 interface MappedRoom extends Room {
   floor_name: string
@@ -170,6 +171,20 @@ export default function GuestProfile() {
     } catch (e: any) {
       console.error(e)
       toast.error('Error deleting guest')
+    }
+  }
+
+  // Reset Guest PIN
+  async function handleResetPin() {
+    if (!guest || !guest.user_id) return
+    if (!confirm(`Are you sure you want to reset the login PIN for ${guest.first_name} ${guest.last_name} to "123456"?`)) return
+    try {
+      const res = await resetUserPasswordAction(guest.user_id)
+      if (!res.success) throw new Error(res.error || 'Failed to reset PIN')
+      toast.success('PIN has been successfully reset to "123456"!')
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e.message || 'Failed to reset PIN')
     }
   }
 
@@ -543,6 +558,11 @@ export default function GuestProfile() {
                 {guest.status === 'active' && (
                   <button className="dz-btn" onClick={handleCheckout}>
                     🚪 Mark as Checked Out
+                  </button>
+                )}
+                {guest.user_id && (
+                  <button className="dz-btn" onClick={handleResetPin} style={{ color: '#F4700A', borderColor: '#FFD9B8' }}>
+                    🔑 Reset Login PIN to "123456"
                   </button>
                 )}
                 <button className="dz-btn" onClick={handleDelete}>

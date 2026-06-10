@@ -118,6 +118,27 @@ export default function SuperAdminPgs() {
     }
   }
 
+  // Delete property
+  async function handleDeletePg(pgId: string, pgName: string) {
+    if (!confirm(`Are you sure you want to delete "${pgName}"? This will hide it from the platform.`)) return
+    try {
+      const { error } = await supabase
+        .from('pgs')
+        .update({
+          deleted_at: new Date().toISOString()
+        })
+        .eq('id', pgId)
+
+      if (error) throw error
+
+      toast.success(`"${pgName}" has been deleted`)
+      setPgs(prev => prev.filter(pg => pg.id !== pgId))
+    } catch (e: any) {
+      console.error(e)
+      toast.error('Failed to delete PG property')
+    }
+  }
+
   // Get unique cities list for filter
   const uniqueCities = Array.from(new Set(pgs.map(pg => pg.city))).filter(Boolean)
 
@@ -271,12 +292,21 @@ export default function SuperAdminPgs() {
                       </span>
                     </div>
 
-                    <button 
-                      onClick={() => router.push('/pgadmin/rooms')}
-                      className="edit-btn"
-                    >
-                      Set Up Rooms 🏢
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button 
+                        onClick={() => handleDeletePg(pg.id, pg.name)}
+                        className="delete-btn-pg"
+                        title="Delete PG Property"
+                      >
+                        🗑️
+                      </button>
+                      <button 
+                        onClick={() => router.push('/pgadmin/rooms')}
+                        className="edit-btn"
+                      >
+                        Set Up Rooms 🏢
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
@@ -514,6 +544,22 @@ export default function SuperAdminPgs() {
           background: #FFF4EC;
           border-color: #FFD9B8;
           color: #F4700A;
+        }
+
+        .delete-btn-pg {
+          border: 1px solid #EDE0D4;
+          background: #fff;
+          border-radius: 8px;
+          padding: 6px 10px;
+          font-size: 12px;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.15s;
+        }
+        .delete-btn-pg:hover {
+          background: #FDECEA;
+          border-color: #F5C6C5;
+          color: #E53935;
         }
 
         /* TOGGLE SWITCH SWITCH STYLE */

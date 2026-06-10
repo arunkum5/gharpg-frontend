@@ -6,9 +6,11 @@ import { createClient } from '@/lib/supabase/client'
 import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { resetUserPasswordAction } from '@/app/actions/auth'
 
 interface GuestWithRoom {
   id: string
+  user_id: string | null
   first_name: string
   last_name: string
   gender: string
@@ -87,7 +89,7 @@ export default function GuestList() {
       const { data: guestsData, error: guestsErr } = await supabase
         .from('guests')
         .select(`
-          id, first_name, last_name, gender, dob, photo_url, purpose, checkin_date, status, approval_status, monthly_rent, stay_duration_months, notes, created_at,
+          id, user_id, first_name, last_name, gender, dob, photo_url, purpose, checkin_date, status, approval_status, monthly_rent, stay_duration_months, notes, created_at,
           rooms(id, room_number, floors(floor_name))
         `)
         .eq('pg_id', pg.id)
@@ -156,6 +158,19 @@ export default function GuestList() {
     } catch (e: any) {
       console.error(e)
       toast.error('Error deleting guest')
+    }
+  }
+
+  // Reset login PIN
+  async function handleResetPin(userId: string, name: string) {
+    if (!confirm(`Are you sure you want to reset the login PIN for ${name} to "123456"?`)) return
+    try {
+      const res = await resetUserPasswordAction(userId)
+      if (!res.success) throw new Error(res.error || 'Failed to reset PIN')
+      toast.success(`PIN for ${name} has been reset to "123456"!`)
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e.message || 'Failed to reset PIN')
     }
   }
 
@@ -521,6 +536,15 @@ export default function GuestList() {
               </div>
             </div>
             <div className="dr-foot">
+              {drawerGuest.user_id && (
+                <button
+                  className="dr-checkout-btn"
+                  onClick={() => handleResetPin(drawerGuest.user_id!, `${drawerGuest.first_name} ${drawerGuest.last_name}`)}
+                  style={{ background: 'var(--orange-pale)', color: 'var(--orange)', borderColor: 'var(--orange-border)' }}
+                >
+                  🔑 Reset PIN
+                </button>
+              )}
               {drawerGuest.status === 'active' && (
                 <button
                   className="dr-checkout-btn"

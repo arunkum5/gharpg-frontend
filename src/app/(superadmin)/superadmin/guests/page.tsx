@@ -6,9 +6,11 @@ import { createClient } from '@/lib/supabase/client'
 import TopBar from '@/components/layout/TopBar'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { resetUserPasswordAction } from '@/app/actions/auth'
 
 interface GuestWithPGAndRoom {
   id: string
+  user_id: string | null
   first_name: string
   last_name: string
   gender: string
@@ -116,7 +118,7 @@ export default function SuperAdminGuests() {
       const { data: guestsData, error: guestsErr } = await supabase
         .from('guests')
         .select(`
-          id, first_name, last_name, gender, dob, photo_url, purpose, college_or_company, hometown_city, checkin_date, expected_checkout_date, actual_checkout_date, stay_duration_months, monthly_rent, status, approval_status, notes, created_at, pg_id, room_id,
+          id, user_id, first_name, last_name, gender, dob, photo_url, purpose, college_or_company, hometown_city, checkin_date, expected_checkout_date, actual_checkout_date, stay_duration_months, monthly_rent, status, approval_status, notes, created_at, pg_id, room_id,
           rooms(id, room_number, current_occupancy, capacity, floors(floor_name)),
           pgs(id, name, city)
         `)
@@ -242,6 +244,19 @@ export default function SuperAdminGuests() {
     } catch (e: any) {
       console.error(e)
       toast.error('Failed to delete guest record')
+    }
+  }
+
+  // Reset guest PIN
+  async function handleResetPin(userId: string, name: string) {
+    if (!confirm(`Are you sure you want to reset the login PIN for ${name} to "123456"?`)) return
+    try {
+      const res = await resetUserPasswordAction(userId)
+      if (!res.success) throw new Error(res.error || 'Failed to reset PIN')
+      toast.success(`PIN for ${name} has been reset to "123456"!`)
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e.message || 'Failed to reset PIN')
     }
   }
 
@@ -603,6 +618,15 @@ export default function SuperAdminGuests() {
               >
                 Close Drawer
               </button>
+              {selectedGuest.user_id && (
+                <button 
+                  className="btn-danger-outline" 
+                  onClick={() => handleResetPin(selectedGuest.user_id!, `${selectedGuest.first_name} ${selectedGuest.last_name}`)}
+                  style={{ borderColor: '#FFD9B8', color: '#F4700A' }}
+                >
+                  🔑 Reset PIN
+                </button>
+              )}
               {selectedGuest.status === 'active' && (
                 <button 
                   className="btn-danger-outline" 

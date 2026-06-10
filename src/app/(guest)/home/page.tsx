@@ -88,6 +88,12 @@ export default function GuestHome() {
   const [refNotes, setRefNotes] = useState('')
   const [submittingReferral, setSubmittingReferral] = useState(false)
 
+  // Change PIN states
+  const [isChangePinOpen, setIsChangePinOpen] = useState(false)
+  const [newPin, setNewPin] = useState('')
+  const [confirmPin, setConfirmPin] = useState('')
+  const [updatingPin, setUpdatingPin] = useState(false)
+
   // Fetch all data
   useEffect(() => {
     fetchData()
@@ -213,6 +219,37 @@ export default function GuestHome() {
       toast.error(err.message || 'Failed to submit referral')
     } finally {
       setSubmittingReferral(false)
+    }
+  }
+
+  async function handleChangePin(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPin.length !== 6 || !/^\d+$/.test(newPin)) {
+      toast.error('PIN must be exactly 6 digits')
+      return
+    }
+    if (newPin !== confirmPin) {
+      toast.error('Confirm PIN does not match New PIN')
+      return
+    }
+
+    setUpdatingPin(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPin
+      })
+
+      if (error) throw error
+
+      toast.success('Your PIN has been successfully updated!')
+      setIsChangePinOpen(false)
+      setNewPin('')
+      setConfirmPin('')
+    } catch (e: any) {
+      console.error(e)
+      toast.error(e.message || 'Failed to update PIN')
+    } finally {
+      setUpdatingPin(false)
     }
   }
 
@@ -681,6 +718,11 @@ export default function GuestHome() {
                   <div className="ps-label">Notifications</div>
                   <div className="ps-arrow">›</div>
                 </div>
+                <div className="ps-item" onClick={() => setIsChangePinOpen(true)}>
+                  <div className="ps-ic" style={{ background: 'var(--orange-pale)' }}>🔑</div>
+                  <div className="ps-label">Change Login PIN</div>
+                  <div className="ps-arrow">›</div>
+                </div>
                 <div className="ps-item" onClick={handleLogout}>
                   <div className="ps-ic" style={{ background: '#F0EDE8' }}>🚪</div>
                   <div className="ps-label">Sign Out</div>
@@ -700,6 +742,53 @@ export default function GuestHome() {
           </div>
 
         </div>{/* /screens */}
+
+        {/* CHANGE PIN DRAWER (MOBILE SHEET) */}
+        {isChangePinOpen && (
+          <div className="drawer-overlay open" onClick={() => setIsChangePinOpen(false)} style={{ zIndex: 999 }}></div>
+        )}
+        <div className={`pwa-sheet ${isChangePinOpen ? 'open' : ''}`}>
+          <div className="sheet-hd">
+            <div className="sheet-title">🔑 Update Login PIN</div>
+            <div className="sheet-close" onClick={() => setIsChangePinOpen(false)}>✕</div>
+          </div>
+          <form className="sheet-body" onSubmit={handleChangePin}>
+            <p style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14, lineHeight: 1.4 }}>
+              Set a new 6-digit passcode PIN to login to your guest portal.
+            </p>
+            <div className="field">
+              <label>New 6-digit PIN</label>
+              <input
+                type="password"
+                maxLength={6}
+                placeholder="••••••"
+                value={newPin}
+                onChange={e => setNewPin(e.target.value.replace(/\D/g, ''))}
+                required
+              />
+            </div>
+            <div className="field" style={{ marginTop: 10 }}>
+              <label>Confirm PIN</label>
+              <input
+                type="password"
+                maxLength={6}
+                placeholder="••••••"
+                value={confirmPin}
+                onChange={e => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                required
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="sheet-btn" 
+              disabled={updatingPin}
+              style={{ marginTop: 16 }}
+            >
+              {updatingPin ? 'Updating PIN...' : 'Save New PIN'}
+            </button>
+          </form>
+        </div>
+
       </div>{/* /phone */}
 
       <style>{`
@@ -927,6 +1016,20 @@ export default function GuestHome() {
         .ps-arrow { color: var(--text-soft); font-size: 12px; }
 
         .logout-btn { background: var(--red-pale); color: var(--red); border: 1.5px solid #F5C6C5; border-radius: 13px; padding: 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; width: 100%; }
+
+        .pwa-sheet {
+          position: absolute; left: 0; right: 0; bottom: 0;
+          background: var(--white); border-top: 1px solid var(--border);
+          border-radius: 24px 24px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+          transform: translateY(100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+          z-index: 1000; padding: 20px;
+        }
+        .pwa-sheet.open { transform: translateY(0); }
+        .sheet-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .sheet-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 800; color: var(--text); }
+        .sheet-close { font-size: 16px; color: var(--text-soft); cursor: pointer; }
+        .sheet-btn { background: var(--orange); color: #fff; border: none; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 800; cursor: pointer; width: 100%; transition: background 0.15s; font-family: inherit; }
+        .sheet-btn:hover { background: var(--orange-hover); }
 
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .home-body > * { animation: fadeUp 0.3s ease both; }
