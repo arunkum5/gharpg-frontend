@@ -86,21 +86,37 @@ export default function GuestList() {
       setPgId(pg.id)
       setPgName(pg.name)
 
-      // Fetch guests with profile email via join
-      const { data: guestsData, error: guestsErr } = await supabase
+      // Fetch guests with profile email via join (safely, fallback if error)
+      let guestsData: any[] = []
+      const { data: joinedData, error: guestsErr } = await supabase
         .from('guests')
         .select(`
           id, user_id, first_name, last_name, gender, dob, photo_url, purpose, checkin_date, status, approval_status, monthly_rent, stay_duration_months, notes, created_at,
-          rooms(id, room_number, floors(floor_name)),
-          profiles(email)
+          rooms(id, room_number, floors(floor_name))
         `)
         .eq('pg_id', pg.id)
 
       if (guestsErr) throw guestsErr
+      guestsData = joinedData || []
 
-      const mappedGuests = (guestsData || []).map((g: any) => ({
+      // Fetch emails for the profiles linked to guests in a secondary query to prevent schema relationship errors
+      const userIds = guestsData.map(g => g.user_id).filter(Boolean)
+      let profilesMap: Record<string, string> = {}
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds)
+        if (profilesData) {
+          profilesData.forEach(p => {
+            if (p.email) profilesMap[p.id] = p.email
+          })
+        }
+      }
+
+      const mappedGuests = guestsData.map((g: any) => ({
         ...g,
-        email: (g.profiles as any)?.email || null,
+        email: g.user_id ? (profilesMap[g.user_id] || null) : null,
         rooms: g.rooms ? {
           id: g.rooms.id,
           room_number: g.rooms.room_number,
