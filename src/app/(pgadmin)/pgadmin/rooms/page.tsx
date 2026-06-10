@@ -114,7 +114,11 @@ export default function FloorRoomBuilder() {
 
       setFloors(floorsRes.data || [])
       setRows(rowsRes.data || [])
-      setRooms(roomsRes.data || [])
+      const mapped = (roomsRes.data || []).map((r: any) => ({
+        ...r,
+        room_type: (r.room_type === 'dormitory' && r.capacity === 4) ? 'quad' : r.room_type
+      }))
+      setRooms(mapped)
 
       // Auto expand first floor if none expanded yet
       if (floorsRes.data && floorsRes.data.length > 0 && Object.keys(expandedFloors).length === 0) {
@@ -164,7 +168,7 @@ export default function FloorRoomBuilder() {
           room_number: editRoomNum.trim(),
           floor_id: editFloorId,
           row_id: editRowId,
-          room_type: editRoomType,
+          room_type: editRoomType === 'quad' ? 'dormitory' : editRoomType,
           capacity: editCapacity,
           status: editStatus,
           monthly_rent: editRent,
@@ -374,7 +378,7 @@ export default function FloorRoomBuilder() {
             floor_id: floorData.id,
             row_id: r.id,
             room_number: roomNumStr,
-            room_type: defaultRoomType,
+            room_type: defaultRoomType === 'quad' ? 'dormitory' : defaultRoomType,
             capacity: defaultCapacity,
             current_occupancy: 0,
             status: 'free',
@@ -500,7 +504,17 @@ export default function FloorRoomBuilder() {
               </div>
               <div className="field">
                 <label>Default Room Type</label>
-                <select value={defaultRoomType} onChange={e => setDefaultRoomType(e.target.value)}>
+                <select
+                  value={defaultRoomType}
+                  onChange={e => {
+                    const val = e.target.value
+                    setDefaultRoomType(val)
+                    if (val === 'single') setDefaultCapacity(1)
+                    else if (val === 'double') setDefaultCapacity(2)
+                    else if (val === 'triple') setDefaultCapacity(3)
+                    else if (val === 'quad') setDefaultCapacity(4)
+                  }}
+                >
                   <option value="single">Single</option>
                   <option value="double">Double (Sharing)</option>
                   <option value="triple">Triple (Sharing)</option>
@@ -626,7 +640,7 @@ export default function FloorRoomBuilder() {
             {selectedRoom && (
               <div className="rdp-body">
                 <div className="field">
-                  <label>Room Number</label>
+                  <label>Room Name / Number</label>
                   <input
                     type="text"
                     value={editRoomNum}
@@ -670,7 +684,13 @@ export default function FloorRoomBuilder() {
                       <div
                         key={t.type}
                         className={`type-btn ${editRoomType === t.type ? 'sel' : ''}`}
-                        onClick={() => setEditRoomType(t.type)}
+                        onClick={() => {
+                          setEditRoomType(t.type)
+                          if (t.type === 'single') setEditCapacity(1)
+                          else if (t.type === 'double') setEditCapacity(2)
+                          else if (t.type === 'triple') setEditCapacity(3)
+                          else if (t.type === 'quad') setEditCapacity(4)
+                        }}
                         style={{ padding: '6px 4px' }}
                       >
                         <div className="type-ic" style={{ fontSize: 13 }}>{t.ic}</div>
@@ -780,7 +800,7 @@ export default function FloorRoomBuilder() {
                   </div>
                   <div className="field-row">
                     <div className="field">
-                      <label>Rooms per Row</label>
+                      <label>Rooms per Floor</label>
                       <select
                         value={newRoomsPerRow}
                         onChange={e => setNewRoomsPerRow(Number(e.target.value))}
@@ -818,7 +838,14 @@ export default function FloorRoomBuilder() {
                     <label>Default Room Type</label>
                     <select
                       value={defaultRoomType}
-                      onChange={e => setDefaultRoomType(e.target.value)}
+                      onChange={e => {
+                        const val = e.target.value
+                        setDefaultRoomType(val)
+                        if (val === 'single') setDefaultCapacity(1)
+                        else if (val === 'double') setDefaultCapacity(2)
+                        else if (val === 'triple') setDefaultCapacity(3)
+                        else if (val === 'quad') setDefaultCapacity(4)
+                      }}
                     >
                       <option value="single">Single</option>
                       <option value="double">Double (Sharing)</option>

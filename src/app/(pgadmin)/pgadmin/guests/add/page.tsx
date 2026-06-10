@@ -125,6 +125,7 @@ export default function AddGuest() {
 
       const mappedRooms = (roomsRes.data || []).map((r: any) => ({
         ...r,
+        room_type: (r.room_type === 'dormitory' && r.capacity === 4) ? 'quad' : r.room_type,
         floor_name: r.floors?.floor_name || 'Floor'
       })) as MappedRoom[]
 

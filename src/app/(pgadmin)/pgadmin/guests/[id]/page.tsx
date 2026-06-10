@@ -86,6 +86,7 @@ export default function GuestProfile() {
         ...guestData,
         rooms: guestData.rooms ? {
           ...guestData.rooms,
+          room_type: (guestData.rooms.room_type === 'dormitory' && guestData.rooms.capacity === 4) ? 'quad' : guestData.rooms.room_type,
           floor_name: (guestData.rooms.floors as any)?.floor_name || 'Floor',
           row_name: (guestData.rooms.rows as any)?.row_name || 'Row'
         } : null
@@ -380,7 +381,7 @@ export default function GuestProfile() {
                       <div className="detail-grid">
                         <div className="dg-item">
                           <div className="dg-label">Room Type</div>
-                          <div className="dg-val">{guest.rooms.room_type.toUpperCase()}</div>
+                          <div className="dg-val">{guest.rooms.room_type === 'quad' ? '4 SHARING' : guest.rooms.room_type.toUpperCase()}</div>
                         </div>
                         <div className="dg-item">
                           <div className="dg-label">Occupancy</div>

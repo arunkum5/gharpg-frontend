@@ -337,7 +337,7 @@ export default function GuestHome() {
                   <div className="rh-label">Your Room</div>
                   <div className="rh-room">Room {room?.room_number || 'N/A'}</div>
                   <div className="rh-detail">
-                    {room?.floors?.floor_name || 'N/A'} · {room?.rows?.row_name || 'N/A'} · {room?.room_type === 'double' ? 'Double Sharing' : room?.room_type === 'single' ? 'Single Room' : room?.room_type === 'triple' ? 'Triple Sharing' : 'Dormitory'}
+                    {room?.floors?.floor_name || 'N/A'} · {room?.rows?.row_name || 'N/A'} · {room?.room_type === 'double' ? 'Double Sharing' : room?.room_type === 'single' ? 'Single Room' : room?.room_type === 'triple' ? 'Triple Sharing' : (room?.room_type === 'quad' || (room?.room_type === 'dormitory' && room?.capacity === 4)) ? '4 Sharing' : 'Dormitory'}
                   </div>
                 </div>
                 <div className="rh-badge">Active ✓</div>
@@ -497,7 +497,7 @@ export default function GuestHome() {
                 <div className="rbc-details">
                   <div className="rbc-item"><div className="rbc-item-label">Floor</div><div className="rbc-item-val">{room?.floors?.floor_name || '1st Floor'}</div></div>
                   <div className="rbc-item"><div className="rbc-item-label">Row</div><div className="rbc-item-val">{room?.rows?.row_name || 'Row A'}</div></div>
-                  <div className="rbc-item"><div className="rbc-item-label">Type</div><div className="rbc-item-val">{room?.room_type === 'double' ? 'Double Sharing' : 'Single Room'}</div></div>
+                  <div className="rbc-item"><div className="rbc-item-label">Type</div><div className="rbc-item-val">{room?.room_type === 'double' ? 'Double Sharing' : room?.room_type === 'single' ? 'Single Room' : room?.room_type === 'triple' ? 'Triple Sharing' : (room?.room_type === 'quad' || (room?.room_type === 'dormitory' && room?.capacity === 4)) ? '4 Sharing' : 'Dormitory'}</div></div>
                   <div className="rbc-item"><div className="rbc-item-label">Occupancy</div><div className="rbc-item-val">{room?.current_occupancy || 1} / {room?.capacity || 2}</div></div>
                 </div>
               </div>
